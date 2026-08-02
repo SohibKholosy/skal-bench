@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>SKAL Bench v1.0.0</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+</style>
+  <style type="text/css">:root{--ink:#1C2733;--rust:#A85C2E;--faint:#5A5F66;--line:#e3e0da;--bg:#fff;--soft:#faf9f7}
+*{box-sizing:border-box}
+body{max-width:52rem;margin:0 auto;padding:3rem 1.5rem 6rem;background:var(--bg);color:var(--ink);
+font-family:"DejaVu Serif",Georgia,"Times New Roman",serif;font-size:16px;line-height:1.68}
+h1,h2,h3,h4,.title,.subtitle,.author,.date{font-family:"DejaVu Sans",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.25}
+h1.title{font-size:2.3rem;margin:0 0 .4rem;border:none}
+p.subtitle,p.author,p.date{color:var(--rust);font-size:1.05rem;margin:0 0 .4rem}
+h1{font-size:1.75rem;margin:3.2rem 0 1rem;padding-bottom:.45rem;border-bottom:2px solid var(--rust)}
+h2{font-size:1.2rem;margin:2.4rem 0 .5rem;color:var(--ink)}
+h3{font-size:1.05rem;margin:1.6rem 0 .4rem;color:var(--faint)}
+p{margin:.75rem 0}
+math{font-size:1.05em}
+p:has(> math[display="block"]){background:var(--soft);border:1px solid var(--line);border-left:3px solid var(--rust);
+border-radius:5px;padding:.9rem 1rem;margin:1.1rem 0;text-align:center;overflow-x:auto}
+ul,ol{margin:.7rem 0;padding-left:1.4rem}
+li{margin:.35rem 0}
+blockquote{margin:.9rem 0;padding:.65rem 1rem;background:var(--soft);border-left:3px solid var(--line);
+border-radius:0 4px 4px 0;font-size:.86rem;line-height:1.6;color:var(--faint)}
+blockquote p{margin:0}
+blockquote strong{color:var(--ink)}
+#TOC{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:1.2rem 1.6rem;margin:2.5rem 0 1rem;
+font-family:"DejaVu Sans",sans-serif;font-size:.9rem;line-height:1.5}
+#TOC ul{list-style:none;padding-left:1.1rem;margin:.3rem 0}
+#TOC>ul{padding-left:0}
+#TOC a{color:var(--ink);text-decoration:none}
+#TOC a:hover{color:var(--rust);text-decoration:underline}
+a{color:var(--rust)}
+hr{border:none;border-top:1px solid var(--line);margin:2.5rem 0}
+@media print{body{max-width:none;padding:0;font-size:10.5pt}h1{page-break-after:avoid}h2{page-break-after:avoid}
+blockquote,p:has(> math[display="block"]){page-break-inside:avoid}#TOC{page-break-after:always}}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">SKAL Bench v1.0.0</h1>
+<p class="subtitle">Methods, Equations &amp; References</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a>
+<ul>
+<li><a href="#how-a-test-runs" id="toc-how-a-test-runs">How a test
+runs</a></li>
+</ul></li>
+<li><a href="#permeability" id="toc-permeability">Permeability</a>
+<ul>
+<li><a href="#steady-state-gas-permeameter" id="toc-steady-state-gas-permeameter">Steady-State Gas
+Permeameter</a></li>
+<li><a href="#single-point-gas-permeability" id="toc-single-point-gas-permeability">Single-Point Gas
+Permeability</a></li>
+<li><a href="#pulse-decay-unsteady-state" id="toc-pulse-decay-unsteady-state">Pulse-Decay
+(Unsteady-State)</a></li>
+<li><a href="#baseline-liquid-water-permeability" id="toc-baseline-liquid-water-permeability">Baseline Liquid (Water)
+Permeability</a></li>
+<li><a href="#stress-dependence-of-permeability" id="toc-stress-dependence-of-permeability">Stress Dependence of
+Permeability</a></li>
+<li><a href="#measurement-uncertainty-darcy-k" id="toc-measurement-uncertainty-darcy-k">Measurement Uncertainty (Darcy
+k)</a></li>
+</ul></li>
+<li><a href="#porosity-volumetrics" id="toc-porosity-volumetrics">Porosity &amp; Volumetrics</a>
+<ul>
+<li><a href="#porosity-grain-density" id="toc-porosity-grain-density">Porosity &amp; Grain Density</a></li>
+<li><a href="#helium-porosimetry-boyles-law" id="toc-helium-porosimetry-boyles-law">Helium Porosimetry (Boyle’s
+Law)</a></li>
+</ul></li>
+<li><a href="#capillary-pressure-wettability" id="toc-capillary-pressure-wettability">Capillary Pressure &amp;
+Wettability</a>
+<ul>
+<li><a href="#contact-angle" id="toc-contact-angle">Contact
+Angle</a></li>
+<li><a href="#capillary-pressure-micp" id="toc-capillary-pressure-micp">Capillary Pressure (MICP)</a></li>
+<li><a href="#high-pressure-intrusion-analysis" id="toc-high-pressure-intrusion-analysis">High-Pressure Intrusion
+Analysis</a></li>
+<li><a href="#penetrometer-selection-tool" id="toc-penetrometer-selection-tool">Penetrometer Selection
+Tool</a></li>
+<li><a href="#capillary-pressure-centrifuge" id="toc-capillary-pressure-centrifuge">Capillary Pressure
+(Centrifuge)</a></li>
+<li><a href="#wettability-amott-usbm" id="toc-wettability-amott-usbm">Wettability (Amott / USBM)</a></li>
+</ul></li>
+<li><a href="#relative-permeability" id="toc-relative-permeability">Relative Permeability</a>
+<ul>
+<li><a href="#relative-permeability-steady-state" id="toc-relative-permeability-steady-state">Relative Permeability
+(Steady-State)</a></li>
+<li><a href="#relative-permeability-unsteady-state-jbn" id="toc-relative-permeability-unsteady-state-jbn">Relative Permeability
+(Unsteady-State — JBN)</a></li>
+<li><a href="#brooks-corey-fit" id="toc-brooks-corey-fit">Brooks-Corey
+Fit</a></li>
+<li><a href="#relative-permeability-1" id="toc-relative-permeability-1">Relative Permeability</a></li>
+</ul></li>
+<li><a href="#electrical-properties" id="toc-electrical-properties">Electrical Properties</a>
+<ul>
+<li><a href="#formation-factor-cementation-a-m" id="toc-formation-factor-cementation-a-m">Formation Factor &amp;
+Cementation (a, m)</a></li>
+<li><a href="#resistivity-index-saturation-exponent-n" id="toc-resistivity-index-saturation-exponent-n">Resistivity Index &amp;
+Saturation Exponent (n)</a></li>
+<li><a href="#waxmansmits-shaly-sand" id="toc-waxmansmits-shaly-sand">Waxman–Smits (Shaly Sand)</a></li>
+</ul></li>
+<li><a href="#nmr-petrophysics" id="toc-nmr-petrophysics">NMR
+Petrophysics</a>
+<ul>
+<li><a href="#nmr-porosity-permeability" id="toc-nmr-porosity-permeability">NMR Porosity &amp;
+Permeability</a></li>
+</ul></li>
+<li><a href="#correlations-trends" id="toc-correlations-trends">Correlations &amp; Trends</a>
+<ul>
+<li><a href="#porositypermeability-correlation" id="toc-porositypermeability-correlation">Porosity–Permeability
+Correlation</a></li>
+<li><a href="#rock-typing-winland-r35-fzi" id="toc-rock-typing-winland-r35-fzi">Rock Typing (Winland r35 /
+FZI)</a></li>
+</ul></li>
+<li><a href="#methods-and-conventions" id="toc-methods-and-conventions">Methods and Conventions</a>
+<ul>
+<li><a href="#calibration-philosophy" id="toc-calibration-philosophy">Calibration philosophy</a></li>
+<li><a href="#curve-smoothing" id="toc-curve-smoothing">Curve
+smoothing</a></li>
+<li><a href="#numerical-differentiation" id="toc-numerical-differentiation">Numerical differentiation</a></li>
+<li><a href="#brine-resistivity-and-temperature" id="toc-brine-resistivity-and-temperature">Brine resistivity and
+temperature</a></li>
+<li><a href="#constrained-regression" id="toc-constrained-regression">Constrained regression</a></li>
+<li><a href="#centrifuge-inversion" id="toc-centrifuge-inversion">Centrifuge inversion</a></li>
+<li><a href="#measurement-uncertainty" id="toc-measurement-uncertainty">Measurement uncertainty</a></li>
+<li><a href="#data-export" id="toc-data-export">Data export</a></li>
+<li><a href="#modifying-a-figure" id="toc-modifying-a-figure">Modifying
+a figure</a></li>
+<li><a href="#user-applied-trend-lines" id="toc-user-applied-trend-lines">User-applied trend lines</a></li>
+<li><a href="#when-a-calculation-fails" id="toc-when-a-calculation-fails">When a calculation fails</a></li>
+<li><a href="#units" id="toc-units">Units</a></li>
+</ul></li>
+<li><a href="#limitations" id="toc-limitations">Limitations</a></li>
+<li><a href="#standards" id="toc-standards">Standards</a></li>
+</ul>
+</nav>
+<div class="titlepage">
+<p><strong>SKAL Bench</strong></p>
+<p>Routine &amp; Special Core Analysis</p>
+<p>Methods, Equations and References</p>
+<p>Technical documentation for all analysis modules</p>
+<p>Version 1.0.0  August 2026</p>
+</div>
+<h1 id="introduction">Introduction</h1>
+<p>Every calculation in SKAL Bench is listed here with the equation it
+evaluates, the measurements it requires and the published source it
+follows. Nothing is a black box: where a correlation carries fitted
+coefficients, the defaults are stated and the means of calibrating them
+to core data is described.</p>
+<h2 class="unnumbered" id="how-a-test-runs">How a test runs</h2>
+<p>Select a test from the home page. Each lists the measurements it
+needs and offers a pre-formatted spreadsheet template. Enter one plug by
+hand or upload a batch, and the console returns the headline result, the
+supporting figure and the full computed table. Figures export at
+publication resolution; both the plotted points and the complete table
+export as CSV. Sample-level fields such as plug length and fluid
+viscosity are entered once per plug, while row fields are the
+measurements that vary within a run.</p>
+<h1 id="permeability">Permeability</h1>
+<h2 id="steady-state-gas-permeameter">Steady-State Gas Permeameter</h2>
+<p><strong>Multi-pressure gas flow, Klinkenberg-corrected</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mi>a</mi></msub><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mfrac><mrow><mn>2000</mn><mspace width="0.167em"></mspace><mi>μ</mi><mspace width="0.167em"></mspace><mi>L</mi><mspace width="0.167em"></mspace><msub><mi>P</mi><mn>2</mn></msub><mspace width="0.167em"></mspace><mi>Q</mi></mrow><mrow><mi>A</mi><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>P</mi><mn>1</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo>−</mo><msubsup><mi>P</mi><mn>2</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_a \;=\; \frac{2000\,\mu\,L\,P_2\,Q}{A\left(P_1^{\,2}-P_2^{\,2}\right)}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mi>a</mi></msub><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><msub><mi>k</mi><mi>∞</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mfrac><mi>b</mi><msub><mi>P</mi><mi>m</mi></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>k</mi><mi>∞</mi></msub><mo>=</mo><munder><mo>lim</mo><mrow><mn>1</mn><mi>/</mi><msub><mi>P</mi><mi>m</mi></msub><mo>→</mo><mn>0</mn></mrow></munder><msub><mi>k</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">k_a \;=\; k_\infty\left(1+\frac{b}{P_m}\right),\qquad k_\infty=\lim_{1/P_m\to 0}k_a</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mi>a</mi></msub><annotation encoding="application/x-tex">k_a</annotation></semantics></math>
+= apparent gas permeability at the test mean pressure <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mi>∞</mi></msub><annotation encoding="application/x-tex">k_\infty</annotation></semantics></math>
+= Klinkenberg-corrected (equivalent liquid) permeability <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Q</mi><annotation encoding="application/x-tex">Q</annotation></semantics></math>
+= volumetric gas flow rate at outlet conditions <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math>/s</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>
+= gas viscosity <span style="color: faint">cp</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+= plug length <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math>
+= plug cross-sectional area <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>1</mn></msub><annotation encoding="application/x-tex">P_1</annotation></semantics></math>
+= absolute inlet pressure <span style="color: faint">atm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>2</mn></msub><annotation encoding="application/x-tex">P_2</annotation></semantics></math>
+= absolute outlet pressure <span style="color: faint">atm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>m</mi></msub><annotation encoding="application/x-tex">P_m</annotation></semantics></math>
+= mean pressure, $(P_1+P_2)/2$ <span style="color: faint">atm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>b</mi><annotation encoding="application/x-tex">b</annotation></semantics></math>
+= gas-slip factor of the Klinkenberg relation <span style="color: faint">atm</span></span></p></li>
+</ul>
+<p>Gas is compressible, so the Darcy form uses the squared-pressure
+difference. Because gas molecules slip at the pore wall, apparent
+permeability rises as mean pressure falls; measuring at several mean
+pressures and extrapolating kₐ against 1/Pm to infinite pressure removes
+the effect. The intercept, k∞, is the Klinkenberg-corrected (equivalent
+liquid) permeability, and the slope carries the gas-slip factor b.</p>
+<blockquote>
+<p><strong>References.</strong> Darcy, H. (1856). &quot;Les Fontaines
+Publiques de la Ville de Dijon.&quot; Dalmont, Paris. Gas slippage:
+Klinkenberg, L.J. (1941), &quot;The Permeability of Porous Media to Liquids
+and Gases,&quot; API Drilling and Production Practice, 200–213. Procedure:
+API RP 40 (1998), §6.</p>
+</blockquote>
+<h2 id="single-point-gas-permeability">Single-Point Gas
+Permeability</h2>
+<p><strong>One pressure/flow reading per plug</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mi>a</mi></msub><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mfrac><mrow><mn>2000</mn><mspace width="0.167em"></mspace><mi>μ</mi><mspace width="0.167em"></mspace><mi>L</mi><mspace width="0.167em"></mspace><msub><mi>P</mi><mn>2</mn></msub><mspace width="0.167em"></mspace><mi>Q</mi></mrow><mrow><mi>A</mi><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>P</mi><mn>1</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo>−</mo><msubsup><mi>P</mi><mn>2</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_a \;=\; \frac{2000\,\mu\,L\,P_2\,Q}{A\left(P_1^{\,2}-P_2^{\,2}\right)}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mi>a</mi></msub><annotation encoding="application/x-tex">k_a</annotation></semantics></math>
+= apparent gas permeability <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Q</mi><annotation encoding="application/x-tex">Q</annotation></semantics></math>
+= volumetric flow rate at outlet conditions <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math>/s</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>
+= gas viscosity <span style="color: faint">cp</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+= plug length <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math>
+= cross-sectional area <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>1</mn></msub><annotation encoding="application/x-tex">P_1</annotation></semantics></math>
+= absolute inlet pressure <span style="color: faint">atm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>2</mn></msub><annotation encoding="application/x-tex">P_2</annotation></semantics></math>
+= absolute outlet pressure <span style="color: faint">atm</span></span></p></li>
+</ul>
+<p>A single-point measurement returns the apparent gas permeability at
+one mean pressure. It carries an uncorrected slip contribution and
+therefore reads high — always higher than the Klinkenberg value. Use it
+for screening; use the multi-point steady-state module when the
+corrected permeability matters.</p>
+<blockquote>
+<p><strong>References.</strong> Darcy, H. (1856), as above; API RP 40
+(1998), §6.</p>
+</blockquote>
+<h2 id="pulse-decay-unsteady-state">Pulse-Decay (Unsteady-State)</h2>
+<p><strong>Low-permeability plugs via pressure decay</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mo>−</mo><mfrac><mrow><mi mathvariant="normal">d</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>ln</mo><mi>Δ</mi><mi>P</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">\alpha \;=\; -\frac{\mathrm{d}\left(\ln \Delta P\right)}{\mathrm{d}t}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mfrac><mrow><mn>1000</mn><mspace width="0.167em"></mspace><mi>α</mi><mspace width="0.167em"></mspace><mi>μ</mi><mspace width="0.167em"></mspace><msub><mi>c</mi><mi>f</mi></msub><mspace width="0.167em"></mspace><mi>L</mi></mrow><mrow><mi>A</mi><mrow><mo stretchy="true" form="prefix">(</mo><mfrac displaystyle="true"><mn>1</mn><msub><mi>V</mi><mn>1</mn></msub></mfrac><mo>+</mo><mfrac displaystyle="true"><mn>1</mn><msub><mi>V</mi><mn>2</mn></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">k \;=\; \frac{1000\,\alpha\,\mu\,c_f\,L}{A\left(\dfrac{1}{V_1}+\dfrac{1}{V_2}\right)}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
+= decay constant, the slope of $\{}ln\{}Delta P$ against time <span style="color: faint">s<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">^{-1}</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">\Delta P</annotation></semantics></math>
+= differential pressure across the plug <span style="color: faint">atm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+= elapsed time <span style="color: faint">s</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+= permeability <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>
+= fluid viscosity <span style="color: faint">cp</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>c</mi><mi>f</mi></msub><annotation encoding="application/x-tex">c_f</annotation></semantics></math>
+= fluid compressibility <span style="color: faint">atm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">^{-1}</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+= plug length <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math>
+= cross-sectional area <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mn>1</mn></msub><mo>,</mo><msub><mi>V</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">V_1, V_2</annotation></semantics></math>
+= upstream and downstream reservoir volumes <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+</ul>
+<p>For tight rock, steady flow is impractically slow. Instead a small
+pressure pulse is applied across the plug and its decay between two
+reservoirs is tracked. The decay is exponential, so permeability follows
+from the slope of ln ΔP against time together with the reservoir volumes
+and fluid compressibility.</p>
+<blockquote>
+<p><strong>References.</strong> Brace, W.F., Walsh, J.B. &amp; Frangos,
+W.T. (1968). &quot;Permeability of Granite under High Pressure.&quot; Journal of
+Geophysical Research 73(6), 2225–2236. Practical implementations:
+Dicker, A.I. &amp; Smits, R.M. (1988), SPE 17578; Jones, S.C. (1997), &quot;A
+Technique for Faster Pulse-Decay Permeability Measurements in Tight
+Rocks,&quot; SPE Formation Evaluation 12(1), 19–26.</p>
+</blockquote>
+<h2 id="baseline-liquid-water-permeability">Baseline Liquid (Water)
+Permeability</h2>
+<p><strong>Coreflood, Darcy steady-state liquid flow</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mfrac><mrow><mn>1000</mn><mspace width="0.167em"></mspace><mi>Q</mi><mspace width="0.167em"></mspace><mi>μ</mi><mspace width="0.167em"></mspace><mi>L</mi></mrow><mrow><mi>A</mi><mspace width="0.167em"></mspace><mi>Δ</mi><mi>P</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">k \;=\; \frac{1000\,Q\,\mu\,L}{A\,\Delta P}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+= liquid permeability <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Q</mi><annotation encoding="application/x-tex">Q</annotation></semantics></math>
+= volumetric flow rate <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math>/s</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>
+= liquid viscosity <span style="color: faint">cp</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+= plug length <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math>
+= cross-sectional area <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">\Delta P</annotation></semantics></math>
+= differential pressure <span style="color: faint">atm</span></span></p></li>
+</ul>
+<p>Liquid permeability needs no slip correction, so it is the natural
+reference for the Klinkenberg-corrected gas value. Fitting several flow
+rates and forcing the line through the origin is more robust than any
+single point, and a curved Q–ΔP trend is a warning of turbulence, fines
+migration or clay swelling rather than a valid Darcy measurement.</p>
+<blockquote>
+<p><strong>References.</strong> Darcy, H. (1856), as above; API RP 40
+(1998), §6. Forced-origin regression is used because zero differential
+pressure must give zero flow.</p>
+</blockquote>
+<h2 id="stress-dependence-of-permeability">Stress Dependence of
+Permeability</h2>
+<p><strong>Correct ambient plug permeability to reservoir net confining
+stress</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>σ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><msub><mi>k</mi><mn>0</mn></msub><mspace width="0.167em"></mspace><msup><mi>e</mi><mrow><mo>−</mo><mi>c</mi><mi>σ</mi></mrow></msup><mspace width="2.0em"></mspace><mo>⇒</mo><mspace width="2.0em"></mspace><mo>ln</mo><mi>k</mi><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mo>ln</mo><msub><mi>k</mi><mn>0</mn></msub><mo>−</mo><mi>c</mi><mspace width="0.167em"></mspace><mi>σ</mi></mrow><annotation encoding="application/x-tex">k(\sigma) \;=\; k_0\,e^{-c\sigma} \qquad\Longrightarrow\qquad \ln k \;=\; \ln k_0 - c\,\sigma</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>σ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">k(\sigma)</annotation></semantics></math>
+= permeability at net confining stress $\{}sigma$ <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mn>0</mn></msub><annotation encoding="application/x-tex">k_0</annotation></semantics></math>
+= permeability extrapolated to zero net stress <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
+= stress-sensitivity coefficient <span style="color: faint">psi<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">^{-1}</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+= net confining stress (confining minus pore pressure) <span style="color: faint">psi</span></span></p></li>
+</ul>
+<p>Permeability measured on an unconfined plug overstates the reservoir
+value, sometimes by a large factor in tight or microfractured rock.
+Measure permeability at three or more net confining stresses, and this
+module fits an exponential decline, reports the stress-sensitivity
+coefficient, and predicts permeability at your reservoir net stress. Net
+confining stress is the confining pressure minus the pore pressure —
+enter that, not the raw confining pressure.</p>
+<blockquote>
+<p><strong>References.</strong> American Petroleum Institute (1998).
+&quot;Recommended Practices for Core Analysis&quot; (API RP 40), §5 — measurement
+at net confining stress. Stress sensitivity of permeability: Fatt, I.
+&amp; Davis, D.H. (1952), Trans. AIME 195, 329–336; Jones, F.O. &amp;
+Owens, W.W. (1980), &quot;A Laboratory Study of Low-Permeability Gas Sands,&quot;
+JPT 32(9), 1631–1640.</p>
+</blockquote>
+<h2 id="measurement-uncertainty-darcy-k">Measurement Uncertainty (Darcy
+k)</h2>
+<p><strong>Propagate instrument tolerances into an uncertainty band on
+permeability</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mfrac><mrow><mn>1000</mn><mspace width="0.167em"></mspace><mi>Q</mi><mspace width="0.167em"></mspace><mi>μ</mi><mspace width="0.167em"></mspace><mi>L</mi></mrow><mrow><mi>A</mi><mspace width="0.167em"></mspace><mi>Δ</mi><mi>P</mi></mrow></mfrac><mo>,</mo><mspace width="2.0em"></mspace><mi>A</mi><mo>=</mo><mfrac><mrow><mi>π</mi><msup><mi>D</mi><mn>2</mn></msup></mrow><mn>4</mn></mfrac></mrow><annotation encoding="application/x-tex">k=\frac{1000\,Q\,\mu\,L}{A\,\Delta P},\qquad A=\frac{\pi D^{2}}{4}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><mi>k</mi></msub><mi>k</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><mi>Q</mi></msub><mi>Q</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><mi>μ</mi></msub><mi>μ</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><mi>L</mi></msub><mi>L</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><mn>2</mn><msub><mi>u</mi><mi>D</mi></msub></mrow><mi>D</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><mrow><mi>Δ</mi><mi>P</mi></mrow></msub><mrow><mi>Δ</mi><mi>P</mi></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\left(\frac{u_k}{k}\right)^{2}=\left(\frac{u_Q}{Q}\right)^{2}+\left(\frac{u_\mu}{\mu}\right)^{2}+\left(\frac{u_L}{L}\right)^{2}+\left(\frac{2u_D}{D}\right)^{2}+\left(\frac{u_{\Delta P}}{\Delta P}\right)^{2}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>U</mi><mn>95</mn></msub><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mn>2</mn><mspace width="0.167em"></mspace><mi>k</mi><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><mi>k</mi></msub><mi>k</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">U_{95} \;=\; 2\,k\left(\frac{u_k}{k}\right)</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+= permeability <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Q</mi><annotation encoding="application/x-tex">Q</annotation></semantics></math>
+= flow rate <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math>/s</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>
+= viscosity <span style="color: faint">cp</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+= plug length <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>
+= plug diameter <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math>
+= cross-sectional area, $\{}pi D^2/4$ <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">\Delta P</annotation></semantics></math>
+= differential pressure <span style="color: faint">atm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>u</mi><mi>x</mi></msub><annotation encoding="application/x-tex">u_x</annotation></semantics></math>
+= standard uncertainty of quantity $x$ <span style="color: faint">same
+unit as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>U</mi><mn>95</mn></msub><annotation encoding="application/x-tex">U_{95}</annotation></semantics></math>
+= expanded uncertainty at coverage factor $k=2$ <span style="color: faint">mD</span></span></p></li>
+</ul>
+<p>A permeability is only as good as the instruments behind it. Enter
+each measured quantity together with its uncertainty — the gauge
+tolerance, flow-meter accuracy, caliper resolution — and this module
+propagates them through Darcy’s law. Because the model is a pure
+product, the relative variances simply add, with diameter counting twice
+since area goes as D². The output is the permeability with its expanded
+uncertainty at roughly 95% confidence, plus a ranked contribution list
+showing which instrument is actually limiting your accuracy.</p>
+<blockquote>
+<p><strong>References.</strong> JCGM 100:2008, &quot;Evaluation of
+Measurement Data — Guide to the Expression of Uncertainty in
+Measurement&quot; (GUM), §5 — first-order propagation of uncertainty for a
+product-form model, with the expanded uncertainty U = k·u_c for a
+coverage factor k = 2 (≈95% confidence).</p>
+</blockquote>
+<h1 id="porosity-volumetrics">Porosity &amp; Volumetrics</h1>
+<h2 id="porosity-grain-density">Porosity &amp; Grain Density</h2>
+<p><strong>Bulk, pore &amp; grain volume, porosity and grain density by
+the gravimetric (Archimedes) method</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mi>b</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>W</mi><mrow><mi>s</mi><mi>a</mi><mi>t</mi></mrow></msub><mo>−</mo><msub><mi>W</mi><mrow><mi>i</mi><mi>m</mi><mi>m</mi></mrow></msub></mrow><msub><mi>ρ</mi><mi>f</mi></msub></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>V</mi><mi>p</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>W</mi><mrow><mi>s</mi><mi>a</mi><mi>t</mi></mrow></msub><mo>−</mo><msub><mi>W</mi><mrow><mi>d</mi><mi>r</mi><mi>y</mi></mrow></msub></mrow><msub><mi>ρ</mi><mi>f</mi></msub></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>V</mi><mi>g</mi></msub><mo>=</mo><msub><mi>V</mi><mi>b</mi></msub><mo>−</mo><msub><mi>V</mi><mi>p</mi></msub></mrow><annotation encoding="application/x-tex">V_b=\frac{W_{sat}-W_{imm}}{\rho_f},\qquad V_p=\frac{W_{sat}-W_{dry}}{\rho_f},\qquad V_g=V_b-V_p</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϕ</mi><mo>=</mo><mfrac><msub><mi>V</mi><mi>p</mi></msub><msub><mi>V</mi><mi>b</mi></msub></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>ρ</mi><mi>g</mi></msub><mo>=</mo><mfrac><msub><mi>W</mi><mrow><mi>d</mi><mi>r</mi><mi>y</mi></mrow></msub><msub><mi>V</mi><mi>g</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">\phi=\frac{V_p}{V_b},\qquad \rho_g=\frac{W_{dry}}{V_g}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>b</mi></msub><annotation encoding="application/x-tex">V_b</annotation></semantics></math>
+= bulk volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>p</mi></msub><annotation encoding="application/x-tex">V_p</annotation></semantics></math>
+= pore volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>g</mi></msub><annotation encoding="application/x-tex">V_g</annotation></semantics></math>
+= grain volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>d</mi><mi>r</mi><mi>y</mi></mrow></msub><annotation encoding="application/x-tex">W_{dry}</annotation></semantics></math>
+= dry mass of the cleaned, oven-dried plug <span style="color: faint">g</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>s</mi><mi>a</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">W_{sat}</annotation></semantics></math>
+= saturated mass weighed in air <span style="color: faint">g</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>i</mi><mi>m</mi><mi>m</mi></mrow></msub><annotation encoding="application/x-tex">W_{imm}</annotation></semantics></math>
+= saturated mass weighed immersed in the fluid <span style="color: faint">g</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>f</mi></msub><annotation encoding="application/x-tex">\rho_f</annotation></semantics></math>
+= density of the saturating fluid <span style="color: faint">g/cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+= porosity <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>g</mi></msub><annotation encoding="application/x-tex">\rho_g</annotation></semantics></math>
+= grain density <span style="color: faint">g/cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+</ul>
+<p>Enter one row per plug: the dry mass, the mass fully saturated in
+air, and the saturated mass suspended (immersed) in the saturating
+fluid. Bulk volume comes from Archimedes buoyancy, pore volume from the
+mass of imbibed fluid, and grain volume from their difference — giving
+porosity and grain density per plug plus a dataset mean. Use the same
+fluid for saturation and immersion and enter its density.</p>
+<blockquote>
+<p><strong>References.</strong> American Petroleum Institute (1998).
+&quot;Recommended Practices for Core Analysis&quot; (API RP 40), 2nd ed. — bulk
+volume by Archimedes buoyancy and pore volume by the gravimetric
+(saturation) method.</p>
+</blockquote>
+<h2 id="helium-porosimetry-boyles-law">Helium Porosimetry (Boyle’s
+Law)</h2>
+<p><strong>Grain volume and porosity by double-cell helium expansion —
+the routine-lab standard</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mn>1</mn></msub><msub><mi>V</mi><mi>r</mi></msub><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><msub><mi>P</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>V</mi><mi>r</mi></msub><mo>+</mo><msub><mi>V</mi><mi>c</mi></msub><mo>−</mo><msub><mi>V</mi><mi>g</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">P_1 V_r \;=\; P_2\left(V_r+V_c-V_g\right)</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mi>g</mi></msub><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><msub><mi>V</mi><mi>c</mi></msub><mo>−</mo><msub><mi>V</mi><mi>r</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>P</mi><mn>1</mn></msub><msub><mi>P</mi><mn>2</mn></msub></mfrac><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>V</mi><mi>p</mi></msub><mo>=</mo><msub><mi>V</mi><mi>b</mi></msub><mo>−</mo><msub><mi>V</mi><mi>g</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><mi>ϕ</mi><mo>=</mo><mfrac><msub><mi>V</mi><mi>p</mi></msub><msub><mi>V</mi><mi>b</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">V_g \;=\; V_c-V_r\left(\frac{P_1}{P_2}-1\right),\qquad V_p=V_b-V_g,\qquad \phi=\frac{V_p}{V_b}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>1</mn></msub><annotation encoding="application/x-tex">P_1</annotation></semantics></math>
+= absolute charge pressure in the reference cell <span style="color: faint">psia</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>2</mn></msub><annotation encoding="application/x-tex">P_2</annotation></semantics></math>
+= absolute pressure after expansion <span style="color: faint">psia</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>r</mi></msub><annotation encoding="application/x-tex">V_r</annotation></semantics></math>
+= reference cell volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>c</mi></msub><annotation encoding="application/x-tex">V_c</annotation></semantics></math>
+= empty sample chamber volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>g</mi></msub><annotation encoding="application/x-tex">V_g</annotation></semantics></math>
+= grain volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>b</mi></msub><annotation encoding="application/x-tex">V_b</annotation></semantics></math>
+= bulk volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>p</mi></msub><annotation encoding="application/x-tex">V_p</annotation></semantics></math>
+= pore volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+= porosity <span style="color: faint">fraction</span></span></p></li>
+</ul>
+<p>The routine-lab method for grain volume. Helium is charged into a
+calibrated reference cell at pressure P1, then expanded into the sample
+chamber holding the plug, settling at pressure P2. Boyle’s law gives the
+grain volume directly, and with the plug’s bulk volume you get pore
+volume, porosity and grain density. Enter absolute pressures — if your
+gauge reads gauge pressure, add atmospheric (≈14.7 psi) first.</p>
+<blockquote>
+<p><strong>References.</strong> American Petroleum Institute (1998).
+&quot;Recommended Practices for Core Analysis&quot; (API RP 40), 2nd ed., §4 —
+Boyle’s-law double-cell helium expansion. Helium is used because its
+small molecule accesses fine pore throats and it does not adsorb
+appreciably on most reservoir minerals.</p>
+</blockquote>
+<h1 id="capillary-pressure-wettability">Capillary Pressure &amp;
+Wettability</h1>
+<h2 id="contact-angle">Contact Angle</h2>
+<p><strong>Sessile drop or captive bubble — measure the angle by tangent
+lines</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>γ</mi><mrow><mi>s</mi><mi>v</mi></mrow></msub><mo>=</mo><msub><mi>γ</mi><mrow><mi>s</mi><mi>l</mi></mrow></msub><mo>+</mo><msub><mi>γ</mi><mrow><mi>l</mi><mi>v</mi></mrow></msub><mo>cos</mo><mi>θ</mi><mspace width="2.0em"></mspace><mtext mathvariant="normal">(Young, 1805)</mtext></mrow><annotation encoding="application/x-tex">\gamma_{sv}=\gamma_{sl}+\gamma_{lv}\cos\theta \qquad\text{(Young, 1805)}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mrow><mi>w</mi><mi>a</mi><mi>t</mi><mi>e</mi><mi>r</mi></mrow></msub><mo>=</mo><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>θ</mi><mrow><mi>d</mi><mi>r</mi><mi>o</mi><mi>p</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">water/brine drop</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msup><mn>180</mn><mo>∘</mo></msup><mo>−</mo><msub><mi>θ</mi><mrow><mi>d</mi><mi>r</mi><mi>o</mi><mi>p</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">oil drop or gas bubble</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">\theta_{water}=\begin{cases}\theta_{drop} &amp; \text{water/brine drop}\\[2pt] 180^{\circ}-\theta_{drop} &amp; \text{oil drop or gas bubble}\end{cases}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>γ</mi><mrow><mi>s</mi><mi>v</mi></mrow></msub><annotation encoding="application/x-tex">\gamma_{sv}</annotation></semantics></math>
+= solid–vapour interfacial tension <span style="color: faint">mN/m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>γ</mi><mrow><mi>s</mi><mi>l</mi></mrow></msub><annotation encoding="application/x-tex">\gamma_{sl}</annotation></semantics></math>
+= solid–liquid interfacial tension <span style="color: faint">mN/m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>γ</mi><mrow><mi>l</mi><mi>v</mi></mrow></msub><annotation encoding="application/x-tex">\gamma_{lv}</annotation></semantics></math>
+= liquid–vapour interfacial tension <span style="color: faint">mN/m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>θ</mi><mrow><mi>d</mi><mi>r</mi><mi>o</mi><mi>p</mi></mrow></msub><annotation encoding="application/x-tex">\theta_{drop}</annotation></semantics></math>
+= angle measured through the drop or bubble phase <span style="color: faint">degrees</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>θ</mi><mrow><mi>w</mi><mi>a</mi><mi>t</mi><mi>e</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">\theta_{water}</annotation></semantics></math>
+= contact angle measured through the water phase, used for the
+wettability bands <span style="color: faint">degrees</span></span></p></li>
+</ul>
+<p>Upload a drop or bubble photograph, mark the solid baseline and two
+points on each side of the drop edge, and the console fits a tangent
+through each pair and measures its angle to the baseline — the classical
+goniometric construction, not automated drop-shape fitting, so accuracy
+depends on careful point placement. Because the tangent is measured
+through the drop phase, the fluid setup matters: for an oil drop or a
+captive gas bubble the reported water contact angle is the supplementary
+angle. The result is given both on the seven-band petroleum wettability
+scale and as the surface-science hydrophilic/hydrophobic call at
+90°.</p>
+<blockquote>
+<p><strong>References.</strong> Young, T. (1805). &quot;An Essay on the
+Cohesion of Fluids.&quot; Philosophical Transactions of the Royal Society of
+London 95, 65–87. Measurement convention: Craig, F.F. (1971), &quot;The
+Reservoir Engineering Aspects of Waterflooding,&quot; SPE Monograph 3.
+Interpretation: Anderson, W.G. (1986), &quot;Wettability Literature Survey —
+Part 2: Wettability Measurement,&quot; JPT 38(11), 1246–1262. Classification
+bands: Chilingar, G.V. &amp; Yen, T.F. (1983), Energy Sources 7(1),
+67–75, with Morrow, N.R. (1990), JPT 42(12), 1476–1484.</p>
+</blockquote>
+<h2 id="capillary-pressure-micp">Capillary Pressure (MICP)</h2>
+<p><em>Navigation page — no calculation of its own.</em></p>
+<p><strong>Penetrometer selection, then high-pressure intrusion
+analysis</strong></p>
+<p>A navigation page grouping the mercury-injection workflow: the
+high-pressure intrusion analysis and the penetrometer selection tool. No
+calculation of its own.</p>
+<h2 id="high-pressure-intrusion-analysis">High-Pressure Intrusion
+Analysis</h2>
+<p><strong>Upload the AutoPore export, get the full Pc-curve
+report</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mo>=</mo><mo>−</mo><mfrac><mrow><mn>4</mn><mi>σ</mi><mo>cos</mo><mi>θ</mi></mrow><mi>P</mi></mfrac><mspace width="2.0em"></mspace><mtext mathvariant="normal">(Washburn, 1921)</mtext></mrow><annotation encoding="application/x-tex">d=-\frac{4\sigma\cos\theta}{P}\qquad\text{(Washburn, 1921)}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>P</mi><mi>u</mi><mi>r</mi><mi>c</mi><mi>e</mi><mi>l</mi><mi>l</mi></mrow></msub><mo>=</mo><mfrac><mi>ϕ</mi><mn>8</mn></mfrac><munder><mo>∑</mo><mi>i</mi></munder><mi>Δ</mi><msub><mi>S</mi><mi>i</mi></msub><mspace width="0.167em"></mspace><msubsup><mi>r</mi><mi>i</mi><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo>,</mo><mspace width="2.0em"></mspace><mi>J</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>S</mi><mi>w</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><msub><mi>P</mi><mi>c</mi></msub><mrow><mi>σ</mi><mo>cos</mo><mi>θ</mi></mrow></mfrac><msqrt><mfrac><mi>k</mi><mi>ϕ</mi></mfrac></msqrt></mrow><annotation encoding="application/x-tex">k_{Purcell}=\frac{\phi}{8}\sum_i \Delta S_i\, r_i^{\,2},\qquad J(S_w)=\frac{P_c}{\sigma\cos\theta}\sqrt{\frac{k}{\phi}}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mi>b</mi></msub><mo>=</mo><msub><mi>S</mi><mrow><mi>b</mi><mi>∞</mi></mrow></msub><mo>exp</mo><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><mo>−</mo><mi>G</mi></mrow><mrow><msub><mo>log</mo><mn>10</mn></msub><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>P</mi><mi>c</mi></msub><mi>/</mi><msub><mi>P</mi><mi>d</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>k</mi><mrow><mi>T</mi><mi>h</mi><mi>o</mi><mi>m</mi><mi>e</mi><mi>e</mi><mi>r</mi></mrow></msub><mo>=</mo><mn>3.8068</mn><mspace width="0.167em"></mspace><msup><mi>G</mi><mrow><mo>−</mo><mn>1.3334</mn></mrow></msup><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>S</mi><mrow><mi>b</mi><mi>∞</mi></mrow></msub><msub><mi>P</mi><mi>d</mi></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>1.8834</mn></msup></mrow><annotation encoding="application/x-tex">S_b=S_{b\infty}\exp\!\left(\frac{-G}{\log_{10}\!\left(P_c/P_d\right)}\right),\qquad k_{Thomeer}=3.8068\,G^{-1.3334}\left(\frac{S_{b\infty}}{P_d}\right)^{1.8834}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>
+= pore-throat diameter <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>
+= pore-throat radius <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+= mercury surface tension, 485 by convention <span style="color: faint">dyn/cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math>
+= mercury contact angle, 140$^\{}circ$ by convention <span style="color: faint">degrees</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math>
+= mercury injection pressure <span style="color: faint">psia</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+= porosity <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><msub><mi>S</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\Delta S_i</annotation></semantics></math>
+= saturation increment of interval $i$ <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>S</mi><mi>w</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">J(S_w)</annotation></semantics></math>
+= Leverett J-function <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mi>w</mi></msub><annotation encoding="application/x-tex">S_w</annotation></semantics></math>
+= wetting-phase saturation <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>c</mi></msub><annotation encoding="application/x-tex">P_c</annotation></semantics></math>
+= capillary pressure <span style="color: faint">psi</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mi>b</mi></msub><annotation encoding="application/x-tex">S_b</annotation></semantics></math>
+= mercury saturation as a fraction of bulk volume <span style="color: faint">% BV</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mrow><mi>b</mi><mi>∞</mi></mrow></msub><annotation encoding="application/x-tex">S_{b\infty}</annotation></semantics></math>
+= bulk-volume mercury saturation at infinite pressure <span style="color: faint">% BV</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>G</mi><annotation encoding="application/x-tex">G</annotation></semantics></math>
+= Thomeer pore geometrical factor; lower means better-sorted throats
+<span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>d</mi></msub><annotation encoding="application/x-tex">P_d</annotation></semantics></math>
+= extrapolated mercury displacement (entry) pressure <span style="color: faint">psia</span></span></p></li>
+</ul>
+<p>The full mercury-injection workflow, presented across tabbed
+sections: instrument summary, intrusion curves, petrophysics, the data
+table, relative permeability, a custom plot, and the equations behind
+them. The custom plot tab allows any two of the processed quantities —
+saturation, pressure, throat radius, pore-size distribution, height
+above free water, the J-function — to be plotted against one another in
+a choice of units and on linear or logarithmic axes, with quick presets
+for the standard views and the same Modify and export controls as the
+other figures. Washburn’s equation converts each injection pressure to a
+pore-throat diameter, giving the pore-throat size distribution, and the
+saturation curve yields threshold pressure, r35, sorting, the Leverett
+J-function, mercury entrapment and a family of permeability estimates
+(Purcell, Swanson, Winland, Thomeer). The Brooks–Corey fit is taken
+across the main drainage interval only, excluding the low-pressure
+conformance region and the high-pressure microporosity tail, neither of
+which obeys the power law. The Thomeer hyperbola is fitted by searching
+the displacement pressure with a closed-form linear solve inside,
+returning the pore geometrical factor G, entry pressure Pd and the
+extrapolated Sb∞.</p>
+<blockquote>
+<p><strong>References.</strong> Washburn, E.W. (1921). &quot;Note on a Method
+of Determining the Distribution of Pore Sizes in a Porous Material.&quot;
+PNAS 7(4), 115–116. Purcell, W.R. (1949), Trans. AIME 186, 39–48.
+Burdine, N.T. (1953), Trans. AIME 198, 71–78. Leverett, M.C. (1941),
+Trans. AIME 142, 152–169. Swanson, B.F. (1981), JPT 33(12), 2498–2504.
+Thomeer, H.J. (1960), JPT 12(3), 73–77, and Thomeer, H.J. (1983), JPT
+35(4), 809–814. Brooks, R.H. &amp; Corey, A.T. (1964), Colorado State
+University Hydrology Paper 3. Winland r35 as published in Kolodzie, S.
+(1980), SPE 9382. Flow-zone indicator: Amaefule, J.O. et al. (1993), SPE
+26436.</p>
+</blockquote>
+<h2 id="penetrometer-selection-tool">Penetrometer Selection Tool</h2>
+<p><strong>Pick the right bulb size and stem volume for your
+sample</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">stem utilisation</mtext><mo>=</mo><mfrac><msub><mi>V</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>u</mi><mi>d</mi><mi>e</mi><mi>d</mi></mrow></msub><msub><mi>V</mi><mrow><mi>s</mi><mi>t</mi><mi>e</mi><mi>m</mi></mrow></msub></mfrac><mo>×</mo><mn>100</mn><mi>%</mi><mspace width="2.0em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mrow><mtext mathvariant="normal">target </mtext><mspace width="0.333em"></mspace></mrow><mn>25</mn><mtext mathvariant="normal">–</mtext><mn>90</mn><mi>%</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\text{stem utilisation}=\frac{V_{intruded}}{V_{stem}}\times 100\%\qquad(\text{target } 25\text{--}90\%)</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>u</mi><mi>d</mi><mi>e</mi><mi>d</mi></mrow></msub><annotation encoding="application/x-tex">V_{intruded}</annotation></semantics></math>
+= mercury volume the plug is expected to take up <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>s</mi><mi>t</mi><mi>e</mi><mi>m</mi></mrow></msub><annotation encoding="application/x-tex">V_{stem}</annotation></semantics></math>
+= penetrometer stem capacity <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+</ul>
+<p>Matches a plug to a penetrometer by estimating the mercury volume it
+will take up and checking the resulting stem utilisation. The part
+numbers and bulb/stem volumes are published manufacturer specifications,
+not measured data.</p>
+<blockquote>
+<p><strong>References.</strong> Micromeritics AutoPore penetrometer
+specifications (published catalogue data, Table 5-1). Selection guidance
+follows API RP 40 (1998) and standard mercury-porosimetry practice: too
+little stem utilisation gives poor resolution, too much risks exceeding
+stem capacity mid-run.</p>
+</blockquote>
+<h2 id="capillary-pressure-centrifuge">Capillary Pressure
+(Centrifuge)</h2>
+<p><strong>Drainage Pc curve from multi-speed centrifuge data
+(Hassler–Brunner)</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ω</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mi>N</mi></mrow><mn>60</mn></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub><mo>=</mo><mfrac displaystyle="false"><mn>1</mn><mn>2</mn></mfrac><mspace width="0.167em"></mspace><mi>Δ</mi><mi>ρ</mi><mspace width="0.167em"></mspace><msup><mi>ω</mi><mn>2</mn></msup><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>r</mi><mn>2</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo>−</mo><msubsup><mi>r</mi><mn>1</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\omega=\frac{2\pi N}{60},\qquad P_{c1}=\tfrac{1}{2}\,\Delta\rho\,\omega^{2}\left(r_2^{\,2}-r_1^{\,2}\right)</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>S</mi><mo accent="true">‾</mo></mover><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup><mi>S</mi><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.167em"></mspace><mi mathvariant="normal">d</mi><mi>u</mi><mo>,</mo><mspace width="2.0em"></mspace><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><mrow><mfrac displaystyle="false"><mn>1</mn><mn>2</mn></mfrac><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>r</mi><mn>1</mn></msub><mo>+</mo><msub><mi>r</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><msqrt><mrow><msubsup><mi>r</mi><mn>2</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo>−</mo><mi>u</mi><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>r</mi><mn>2</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo>−</mo><msubsup><mi>r</mi><mn>1</mn><mrow><mspace width="0.167em"></mspace><mn>2</mn></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msqrt></mfrac></mrow><annotation encoding="application/x-tex">\bar{S}\left(P_{c1}\right)=\int_{0}^{1} S\!\left(u P_{c1}\right) g(u)\,\mathrm{d}u,\qquad g(u)=\frac{\tfrac{1}{2}\left(r_1+r_2\right)}{\sqrt{r_2^{\,2}-u\left(r_2^{\,2}-r_1^{\,2}\right)}}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Hassler–Brunner:</mtext><mspace width="1.0em"></mspace><msub><mi>S</mi><mn>1</mn></msub><mo>=</mo><mover><mi>S</mi><mo accent="true">‾</mo></mover><mo>+</mo><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub><mspace width="0.167em"></mspace><mfrac><mrow><mi mathvariant="normal">d</mi><mover><mi>S</mi><mo accent="true">‾</mo></mover></mrow><mrow><mi mathvariant="normal">d</mi><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">\text{Hassler--Brunner:}\quad S_1=\bar{S}+P_{c1}\,\frac{\mathrm{d}\bar{S}}{\mathrm{d}P_{c1}}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ω</mi><annotation encoding="application/x-tex">\omega</annotation></semantics></math>
+= angular velocity <span style="color: faint">rad/s</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
+= rotational speed <span style="color: faint">rev/min</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub><annotation encoding="application/x-tex">P_{c1}</annotation></semantics></math>
+= capillary pressure at the inner (inlet) face <span style="color: faint">psi</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mi>ρ</mi></mrow><annotation encoding="application/x-tex">\Delta\rho</annotation></semantics></math>
+= density difference between the two phases <span style="color: faint">g/cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>r</mi><mn>1</mn></msub><annotation encoding="application/x-tex">r_1</annotation></semantics></math>
+= radius from the axis to the inner core face <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>r</mi><mn>2</mn></msub><annotation encoding="application/x-tex">r_2</annotation></semantics></math>
+= radius from the axis to the outer core face <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>S</mi><mo accent="true">‾</mo></mover><annotation encoding="application/x-tex">\bar{S}</annotation></semantics></math>
+= measured average saturation across the plug <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mn>1</mn></msub><annotation encoding="application/x-tex">S_1</annotation></semantics></math>
+= saturation at the inlet face <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>u</mi><annotation encoding="application/x-tex">u</annotation></semantics></math>
+= normalised position variable, $P_c/P_{c1}$ <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">g(u)</annotation></semantics></math>
+= geometry weighting of the centrifugal field <span style="color: faint">dimensionless</span></span></p></li>
+</ul>
+<p>Enter one row per centrifuge speed: the rotational speed and the
+measured equilibrium average water saturation at that speed. The
+capillary pressure at the inner (inlet) face is computed from the speed
+and the plug’s radial position, and the average saturation is converted
+to the inlet-face saturation by the Hassler–Brunner first approximation.
+The result is the drainage capillary-pressure curve, from which the
+maximum Pc and irreducible saturation are read.</p>
+<blockquote>
+<p><strong>References.</strong> Hassler, G.L. &amp; Brunner, E. (1945).
+&quot;Measurement of Capillary Pressures in Small Core Samples.&quot; Trans. AIME
+160, 114–123. Inlet-face correction after Forbes, P. (1994), The Log
+Analyst 35(4), 31–53; see also API RP 40 (1998).</p>
+</blockquote>
+<h2 id="wettability-amott-usbm">Wettability (Amott / USBM)</h2>
+<p><strong>Amott–Harvey relative displacement index, plus the USBM
+wettability index</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>δ</mi><mi>w</mi></msub><mo>=</mo><mfrac><msub><mi>V</mi><mrow><mi>w</mi><mi>s</mi><mi>p</mi></mrow></msub><msub><mi>V</mi><mrow><mi>w</mi><mi>t</mi></mrow></msub></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>δ</mi><mi>o</mi></msub><mo>=</mo><mfrac><msub><mi>V</mi><mrow><mi>o</mi><mi>s</mi><mi>p</mi></mrow></msub><msub><mi>V</mi><mrow><mi>o</mi><mi>t</mi></mrow></msub></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>I</mi><mrow><mi>A</mi><mi>H</mi></mrow></msub><mo>=</mo><msub><mi>δ</mi><mi>w</mi></msub><mo>−</mo><msub><mi>δ</mi><mi>o</mi></msub></mrow><annotation encoding="application/x-tex">\delta_w=\frac{V_{wsp}}{V_{wt}},\qquad \delta_o=\frac{V_{osp}}{V_{ot}},\qquad I_{AH}=\delta_w-\delta_o</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mrow><mi>U</mi><mi>S</mi><mi>B</mi><mi>M</mi></mrow></msub><mo>=</mo><msub><mo>log</mo><mn>10</mn></msub><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>A</mi><mn>1</mn></msub><msub><mi>A</mi><mn>2</mn></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">W_{USBM}=\log_{10}\!\left(\frac{A_1}{A_2}\right)</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>δ</mi><mi>w</mi></msub><annotation encoding="application/x-tex">\delta_w</annotation></semantics></math>
+= Amott displacement-by-water ratio <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>δ</mi><mi>o</mi></msub><annotation encoding="application/x-tex">\delta_o</annotation></semantics></math>
+= Amott displacement-by-oil ratio <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>w</mi><mi>s</mi><mi>p</mi></mrow></msub><annotation encoding="application/x-tex">V_{wsp}</annotation></semantics></math>
+= oil displaced by spontaneous water imbibition <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>w</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">V_{wt}</annotation></semantics></math>
+= total oil displaced by water, spontaneous plus forced <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>o</mi><mi>s</mi><mi>p</mi></mrow></msub><annotation encoding="application/x-tex">V_{osp}</annotation></semantics></math>
+= water displaced by spontaneous oil imbibition <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mrow><mi>o</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">V_{ot}</annotation></semantics></math>
+= total water displaced by oil, spontaneous plus forced <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>I</mi><mrow><mi>A</mi><mi>H</mi></mrow></msub><annotation encoding="application/x-tex">I_{AH}</annotation></semantics></math>
+= Amott–Harvey index, $+1$ strongly water-wet to $-1$ strongly oil-wet
+<span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mn>1</mn></msub><annotation encoding="application/x-tex">A_1</annotation></semantics></math>
+= area under the oil-drive capillary pressure curve <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mn>2</mn></msub><annotation encoding="application/x-tex">A_2</annotation></semantics></math>
+= area under the brine-drive curve <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>U</mi><mi>S</mi><mi>B</mi><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">W_{USBM}</annotation></semantics></math>
+= USBM wettability index <span style="color: faint">dimensionless</span></span></p></li>
+</ul>
+<p>Enter, per sample, the oil volume displaced by spontaneous water
+imbibition and by total water displacement, and the water volume
+displaced by spontaneous oil imbibition and by total oil displacement.
+The console returns the Amott displacement-by-water and
+displacement-by-oil ratios and the Amott–Harvey index (+1 strongly
+water-wet to −1 strongly oil-wet). Enter the areas under the two
+forced-displacement Pc curves as well and the USBM index is reported
+alongside.</p>
+<blockquote>
+<p><strong>References.</strong> Amott, E. (1959). &quot;Observations Relating
+to the Wettability of Porous Rock.&quot; Trans. AIME 216, 156–162. USBM:
+Donaldson, E.C., Thomas, R.D. &amp; Lorenz, P.B. (1969). &quot;Wettability
+Determination and Its Effect on Recovery Efficiency.&quot; SPE Journal 9(1),
+13–20. Review &amp; bands: Anderson, W.G. (1986). &quot;Wettability
+Literature Survey — Part 2.&quot; JPT 38(11), 1246–1262.</p>
+</blockquote>
+<h1 id="relative-permeability">Relative Permeability</h1>
+<h2 id="relative-permeability-steady-state">Relative Permeability
+(Steady-State)</h2>
+<p><strong>Two-phase oil-water kro/krw curves</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>r</mi><mi>o</mi></mrow></msub><mo>=</mo><mfrac><mrow><mn>1000</mn><mspace width="0.167em"></mspace><msub><mi>Q</mi><mi>o</mi></msub><mspace width="0.167em"></mspace><msub><mi>μ</mi><mi>o</mi></msub><mspace width="0.167em"></mspace><mi>L</mi></mrow><mrow><mi>A</mi><mspace width="0.167em"></mspace><mi>Δ</mi><mi>P</mi><mspace width="0.167em"></mspace><msub><mi>k</mi><mrow><mi>a</mi><mi>b</mi><mi>s</mi></mrow></msub></mrow></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>k</mi><mrow><mi>r</mi><mi>w</mi></mrow></msub><mo>=</mo><mfrac><mrow><mn>1000</mn><mspace width="0.167em"></mspace><msub><mi>Q</mi><mi>w</mi></msub><mspace width="0.167em"></mspace><msub><mi>μ</mi><mi>w</mi></msub><mspace width="0.167em"></mspace><mi>L</mi></mrow><mrow><mi>A</mi><mspace width="0.167em"></mspace><mi>Δ</mi><mi>P</mi><mspace width="0.167em"></mspace><msub><mi>k</mi><mrow><mi>a</mi><mi>b</mi><mi>s</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_{ro}=\frac{1000\,Q_o\,\mu_o\,L}{A\,\Delta P\,k_{abs}},\qquad k_{rw}=\frac{1000\,Q_w\,\mu_w\,L}{A\,\Delta P\,k_{abs}}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mrow><mi>r</mi><mi>o</mi></mrow></msub><annotation encoding="application/x-tex">k_{ro}</annotation></semantics></math>
+= relative permeability to oil <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mrow><mi>r</mi><mi>w</mi></mrow></msub><annotation encoding="application/x-tex">k_{rw}</annotation></semantics></math>
+= relative permeability to water <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>o</mi></msub><mo>,</mo><msub><mi>Q</mi><mi>w</mi></msub></mrow><annotation encoding="application/x-tex">Q_o, Q_w</annotation></semantics></math>
+= oil and water flow rates <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math>/s</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>μ</mi><mi>o</mi></msub><mo>,</mo><msub><mi>μ</mi><mi>w</mi></msub></mrow><annotation encoding="application/x-tex">\mu_o, \mu_w</annotation></semantics></math>
+= oil and water viscosities <span style="color: faint">cp</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+= plug length <span style="color: faint">cm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math>
+= cross-sectional area <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">\Delta P</annotation></semantics></math>
+= differential pressure <span style="color: faint">atm</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mrow><mi>a</mi><mi>b</mi><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">k_{abs}</annotation></semantics></math>
+= absolute permeability of the plug <span style="color: faint">mD</span></span></p></li>
+</ul>
+<p>Both phases are injected together at fixed ratios until pressure and
+production stabilise, and Darcy’s law is applied to each phase in turn.
+Steady state is slower than an unsteady-state flood but far less
+sensitive to numerical differentiation, so it is the reference method
+where accuracy matters.</p>
+<blockquote>
+<p><strong>References.</strong> Hassler, G.L. (1944), US Patent
+2,345,935. Method and interpretation: Osoba, J.S., Richardson, J.G.,
+Kerver, J.K., Hafford, J.A. &amp; Blair, P.M. (1951), &quot;Laboratory
+Measurements of Relative Permeability,&quot; Trans. AIME 192, 47–56;
+Richardson, J.G. et al. (1952), Trans. AIME 195, 187–196.</p>
+</blockquote>
+<h2 id="relative-permeability-unsteady-state-jbn">Relative Permeability
+(Unsteady-State — JBN)</h2>
+<p><strong>kro/krw from a single waterflood displacement</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>r</mi><mi>o</mi></mrow></msub><mo>=</mo><msub><mi>f</mi><mi>o</mi></msub><mspace width="0.167em"></mspace><mfrac><mrow><mi mathvariant="normal">d</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mi>/</mi><msub><mi>Q</mi><mrow><mi>i</mi><mi>D</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi mathvariant="normal">d</mi><mrow><mo stretchy="true" form="prefix">(</mo><mfrac displaystyle="true"><mn>1</mn><mrow><msub><mi>Q</mi><mrow><mi>i</mi><mi>D</mi></mrow></msub><msub><mi>I</mi><mi>R</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>k</mi><mrow><mi>r</mi><mi>w</mi></mrow></msub><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>f</mi><mi>o</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mfrac><mrow><mi mathvariant="normal">d</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mi>/</mi><msub><mi>Q</mi><mrow><mi>i</mi><mi>D</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi mathvariant="normal">d</mi><mrow><mo stretchy="true" form="prefix">(</mo><mfrac displaystyle="true"><mn>1</mn><mrow><msub><mi>Q</mi><mrow><mi>i</mi><mi>D</mi></mrow></msub><msub><mi>I</mi><mi>R</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">k_{ro}=f_o\,\frac{\mathrm{d}\left(1/Q_{iD}\right)}{\mathrm{d}\left(\dfrac{1}{Q_{iD} I_R}\right)},\qquad k_{rw}=\left(1-f_o\right)\frac{\mathrm{d}\left(1/Q_{iD}\right)}{\mathrm{d}\left(\dfrac{1}{Q_{iD} I_R}\right)}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mrow><mi>r</mi><mi>o</mi></mrow></msub><annotation encoding="application/x-tex">k_{ro}</annotation></semantics></math>
+= relative permeability to oil <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>k</mi><mrow><mi>r</mi><mi>w</mi></mrow></msub><annotation encoding="application/x-tex">k_{rw}</annotation></semantics></math>
+= relative permeability to water <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>o</mi></msub><annotation encoding="application/x-tex">f_o</annotation></semantics></math>
+= fractional flow of oil at the outlet face <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mrow><mi>i</mi><mi>D</mi></mrow></msub><annotation encoding="application/x-tex">Q_{iD}</annotation></semantics></math>
+= cumulative water injected, in pore volumes <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>I</mi><mi>R</mi></msub><annotation encoding="application/x-tex">I_R</annotation></semantics></math>
+= relative injectivity, the baseline pressure drop divided by the
+current one <span style="color: faint">dimensionless</span></span></p></li>
+</ul>
+<blockquote>
+<p><strong>References.</strong> Johnson, E.F., Bossler, D.P., and
+Naumann, V.O. (1959). \{}&quot;Calculation of Relative Permeability from
+Displacement Experiments.\{}&quot; Petroleum Transactions, AIME, Vol. 216,
+pp. 370–372.</p>
+</blockquote>
+<h2 id="brooks-corey-fit">Brooks-Corey Fit</h2>
+<p><strong>Fit a Corey-type power-law model + fractional
+flow</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mi>e</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>S</mi><mi>w</mi></msub><mo>−</mo><msub><mi>S</mi><mrow><mi>w</mi><mi>c</mi></mrow></msub></mrow><mrow><mn>1</mn><mo>−</mo><msub><mi>S</mi><mrow><mi>w</mi><mi>c</mi></mrow></msub><mo>−</mo><msub><mi>S</mi><mrow><mi>o</mi><mi>r</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">S_e=\frac{S_w-S_{wc}}{1-S_{wc}-S_{or}}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>r</mi><mi>w</mi></mrow></msub><mo>=</mo><msubsup><mi>k</mi><mrow><mi>r</mi><mi>w</mi></mrow><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msubsup><mspace width="0.167em"></mspace><msubsup><mi>S</mi><mi>e</mi><mrow><mspace width="0.167em"></mspace><msub><mi>N</mi><mi>w</mi></msub></mrow></msubsup><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>k</mi><mrow><mi>r</mi><mi>o</mi></mrow></msub><mo>=</mo><msubsup><mi>k</mi><mrow><mi>r</mi><mi>o</mi></mrow><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msubsup><msup><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mi>e</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>N</mi><mi>o</mi></msub></msup></mrow><annotation encoding="application/x-tex">k_{rw}=k_{rw}^{max}\,S_e^{\,N_w},\qquad k_{ro}=k_{ro}^{max}\left(1-S_e\right)^{N_o}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mi>e</mi></msub><annotation encoding="application/x-tex">S_e</annotation></semantics></math>
+= normalised (effective) water saturation <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mi>w</mi></msub><annotation encoding="application/x-tex">S_w</annotation></semantics></math>
+= water saturation <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mrow><mi>w</mi><mi>c</mi></mrow></msub><annotation encoding="application/x-tex">S_{wc}</annotation></semantics></math>
+= connate (irreducible) water saturation <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mrow><mi>o</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">S_{or}</annotation></semantics></math>
+= residual oil saturation <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>k</mi><mrow><mi>r</mi><mi>w</mi></mrow><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msubsup><annotation encoding="application/x-tex">k_{rw}^{max}</annotation></semantics></math>
+= water relative permeability endpoint <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>k</mi><mrow><mi>r</mi><mi>o</mi></mrow><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msubsup><annotation encoding="application/x-tex">k_{ro}^{max}</annotation></semantics></math>
+= oil relative permeability endpoint <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>w</mi></msub><mo>,</mo><msub><mi>N</mi><mi>o</mi></msub></mrow><annotation encoding="application/x-tex">N_w, N_o</annotation></semantics></math>
+= Corey exponents for water and oil <span style="color: faint">dimensionless</span></span></p></li>
+</ul>
+<blockquote>
+<p><strong>References.</strong> Corey, A.T. (1954). \{}&quot;The
+Interrelation Between Gas and Oil Relative Permeabilities.\{}&quot; Producers
+Monthly, 19(1), 38–41. Brooks, R.H. and Corey, A.T. (1964).
+\{}&quot;Hydraulic Properties of Porous Media.\{}&quot; Hydrology Papers No. 3,
+Colorado State University.</p>
+</blockquote>
+<h2 id="relative-permeability-1">Relative Permeability</h2>
+<p><em>Navigation page — no calculation of its own.</em></p>
+<p><strong>Steady-state, unsteady-state (JBN), or Brooks-Corey
+fit</strong></p>
+<p>A navigation page grouping the three relative-permeability routes:
+steady-state, unsteady-state (JBN) and the Brooks–Corey fit/prediction
+screen. No calculation of its own.</p>
+<h1 id="electrical-properties">Electrical Properties</h1>
+<h2 id="formation-factor-cementation-a-m">Formation Factor &amp;
+Cementation (a, m)</h2>
+<p><strong>Fit F = a·φ⁻ᵐ across brine-saturated plugs to get the
+formation-factor law</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>=</mo><mfrac><msub><mi>R</mi><mi>o</mi></msub><msub><mi>R</mi><mi>w</mi></msub></mfrac><mo>=</mo><mi>a</mi><mspace width="0.167em"></mspace><msup><mi>ϕ</mi><mrow><mo>−</mo><mi>m</mi></mrow></msup><mspace width="2.0em"></mspace><mo>⇒</mo><mspace width="2.0em"></mspace><mo>log</mo><mi>F</mi><mo>=</mo><mo>log</mo><mi>a</mi><mo>−</mo><mi>m</mi><mo>log</mo><mi>ϕ</mi></mrow><annotation encoding="application/x-tex">F=\frac{R_o}{R_w}=a\,\phi^{-m}\qquad\Longrightarrow\qquad \log F=\log a-m\log\phi</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mrow><mi>w</mi><mn>2</mn></mrow></msub><mo>=</mo><msub><mi>R</mi><mrow><mi>w</mi><mn>1</mn></mrow></msub><mspace width="0.167em"></mspace><mfrac><mrow><msub><mi>T</mi><mn>1</mn></msub><mo>+</mo><mn>21.5</mn></mrow><mrow><msub><mi>T</mi><mn>2</mn></msub><mo>+</mo><mn>21.5</mn></mrow></mfrac><mspace width="2.0em"></mspace><mrow><mtext mathvariant="normal">(Arps, 1953; </mtext><mspace width="0.333em"></mspace></mrow><mi>T</mi><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> in </mtext><mspace width="0.333em"></mspace></mrow><mo>∘</mo></msup><mi mathvariant="normal">C</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">R_{w2}=R_{w1}\,\frac{T_1+21.5}{T_2+21.5}\qquad\text{(Arps, 1953; }T\text{ in }^{\circ}\mathrm{C})</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
+= formation resistivity factor <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>o</mi></msub><annotation encoding="application/x-tex">R_o</annotation></semantics></math>
+= resistivity of the plug at 100\{}% brine saturation <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mo>⋅</mo></mrow><annotation encoding="application/x-tex">\Omega\cdot</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>w</mi></msub><annotation encoding="application/x-tex">R_w</annotation></semantics></math>
+= brine resistivity at the measurement temperature <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mo>⋅</mo></mrow><annotation encoding="application/x-tex">\Omega\cdot</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi><annotation encoding="application/x-tex">a</annotation></semantics></math>
+= tortuosity (lithology) factor <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math>
+= cementation exponent <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+= porosity <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mn>1</mn></msub><mo>,</mo><msub><mi>T</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">T_1, T_2</annotation></semantics></math>
+= temperatures for the Arps correction <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mo>∘</mo></msup><annotation encoding="application/x-tex">^\circ</annotation></semantics></math>C</span></span></p></li>
+</ul>
+<p>Enter one row per brine-saturated plug: its porosity and its
+resistivity at 100% brine saturation (Ro). With the brine resistivity
+(Rw), each plug’s formation factor F = Ro/Rw is computed, then a
+straight line is fitted to log F versus log φ. The slope gives the
+cementation exponent m and the intercept the tortuosity/lithology factor
+a (Archie’s original a = 1; Humble formula a ≈ 0.62, m ≈ 2.15 for
+sandstones).</p>
+<blockquote>
+<p><strong>References.</strong> Archie, G.E. (1942). &quot;The Electrical
+Resistivity Log as an Aid in Determining Some Reservoir
+Characteristics.&quot; Trans. AIME 146, 54–62. Tortuosity/lithology factor a:
+Winsauer, W.O., Shearin, H.M., Masson, P.H. &amp; Williams, M. (1952).
+&quot;Resistivity of Brine-Saturated Sands in Relation to Pore Geometry.&quot;
+AAPG Bulletin 36(2), 253–277.</p>
+</blockquote>
+<h2 id="resistivity-index-saturation-exponent-n">Resistivity Index &amp;
+Saturation Exponent (n)</h2>
+<p><strong>Fit IR = Sw⁻ⁿ across a desaturation series to get Archie’s
+saturation exponent</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>I</mi><mi>R</mi></msub><mo>=</mo><mfrac><msub><mi>R</mi><mi>t</mi></msub><msub><mi>R</mi><mi>o</mi></msub></mfrac><mo>=</mo><msubsup><mi>S</mi><mi>w</mi><mrow><mo>−</mo><mi>n</mi></mrow></msubsup><mspace width="2.0em"></mspace><mo>⇒</mo><mspace width="2.0em"></mspace><mo>log</mo><msub><mi>I</mi><mi>R</mi></msub><mo>=</mo><mo>−</mo><mi>n</mi><mo>log</mo><msub><mi>S</mi><mi>w</mi></msub></mrow><annotation encoding="application/x-tex">I_R=\frac{R_t}{R_o}=S_w^{-n}\qquad\Longrightarrow\qquad \log I_R=-n\log S_w</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>n</mi><mo accent="true">̂</mo></mover><mo>=</mo><mo>−</mo><mfrac><mrow><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>x</mi><mi>i</mi></msub><msub><mi>y</mi><mi>i</mi></msub></mrow><mrow><munder><mo>∑</mo><mi>i</mi></munder><msubsup><mi>x</mi><mi>i</mi><mn>2</mn></msubsup></mrow></mfrac><mo>,</mo><mspace width="2.0em"></mspace><mi>x</mi><mo>=</mo><mo>log</mo><msub><mi>S</mi><mi>w</mi></msub><mo>,</mo><mspace width="0.278em"></mspace><mi>y</mi><mo>=</mo><mo>log</mo><msub><mi>I</mi><mi>R</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">(forced through the origin)</mtext></mrow><annotation encoding="application/x-tex">\hat{n}=-\frac{\sum_i x_i y_i}{\sum_i x_i^{2}},\qquad x=\log S_w,\; y=\log I_R\quad\text{(forced through the origin)}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>I</mi><mi>R</mi></msub><annotation encoding="application/x-tex">I_R</annotation></semantics></math>
+= resistivity index <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>t</mi></msub><annotation encoding="application/x-tex">R_t</annotation></semantics></math>
+= resistivity at the stated water saturation <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mo>⋅</mo></mrow><annotation encoding="application/x-tex">\Omega\cdot</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>o</mi></msub><annotation encoding="application/x-tex">R_o</annotation></semantics></math>
+= resistivity at 100\{}% brine saturation <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mo>⋅</mo></mrow><annotation encoding="application/x-tex">\Omega\cdot</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mi>w</mi></msub><annotation encoding="application/x-tex">S_w</annotation></semantics></math>
+= water saturation <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+= saturation exponent <span style="color: faint">dimensionless</span></span></p></li>
+</ul>
+<p>Enter one row per desaturation step on a single plug: the water
+saturation and the resistivity Rt at that saturation. With the plug’s
+resistivity at 100% brine (Ro), the resistivity index IR = Rt/Ro is
+computed and a straight line is fitted to log IR versus log Sw. The
+negative slope is Archie’s saturation exponent n (≈ 2 for clean
+water-wet rock; higher for oil-wet or fractured systems).</p>
+<blockquote>
+<p><strong>References.</strong> Archie, G.E. (1942). &quot;The Electrical
+Resistivity Log as an Aid in Determining Some Reservoir
+Characteristics.&quot; Trans. AIME 146, 54–62 (the second Archie relation).
+Saturation-exponent dependence on wettability: Keller, G.V. (1953) and
+Sweeney, S.A. &amp; Jennings, H.Y. (1960).</p>
+</blockquote>
+<h2 id="waxmansmits-shaly-sand">Waxman–Smits (Shaly Sand)</h2>
+<p><strong>Clay-corrected formation factor F* and cementation exponent
+m* for clay-bearing rock</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>o</mi></msub><mo>=</mo><mfrac><mn>1</mn><msup><mi>F</mi><mo>*</mo></msup></mfrac><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mi>w</mi></msub><mo>+</mo><mi>B</mi><mspace width="0.167em"></mspace><msub><mi>Q</mi><mi>v</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="2.0em"></mspace><mo>⇒</mo><mspace width="2.0em"></mspace><msup><mi>F</mi><mo>*</mo></msup><mo>=</mo><msub><mi>R</mi><mi>o</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mn>1</mn><msub><mi>R</mi><mi>w</mi></msub></mfrac><mo>+</mo><mi>B</mi><mspace width="0.167em"></mspace><msub><mi>Q</mi><mi>v</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">C_o=\frac{1}{F^{*}}\left(C_w+B\,Q_v\right)\qquad\Longrightarrow\qquad F^{*}=R_o\left(\frac{1}{R_w}+B\,Q_v\right)</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>F</mi><mo>*</mo></msup><mo>=</mo><msup><mi>a</mi><mo>*</mo></msup><msup><mi>ϕ</mi><mrow><mo>−</mo><msup><mi>m</mi><mo>*</mo></msup></mrow></msup></mrow><annotation encoding="application/x-tex">F^{*}=a^{*}\phi^{-m^{*}}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>o</mi></msub><annotation encoding="application/x-tex">C_o</annotation></semantics></math>
+= conductivity of the brine-saturated rock <span style="color: faint">S/m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>w</mi></msub><annotation encoding="application/x-tex">C_w</annotation></semantics></math>
+= brine conductivity, $1/R_w$ <span style="color: faint">S/m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>F</mi><mo>*</mo></msup><annotation encoding="application/x-tex">F^{*}</annotation></semantics></math>
+= intrinsic (clay-corrected) formation factor <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
+= equivalent counterion conductance <span style="color: faint">S<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>⋅</mo><annotation encoding="application/x-tex">\cdot</annotation></semantics></math>cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math>/meq</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mi>v</mi></msub><annotation encoding="application/x-tex">Q_v</annotation></semantics></math>
+= cation exchange capacity per unit pore volume <span style="color: faint">meq/cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>o</mi></msub><annotation encoding="application/x-tex">R_o</annotation></semantics></math>
+= resistivity at 100\{}% brine <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mo>⋅</mo></mrow><annotation encoding="application/x-tex">\Omega\cdot</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>w</mi></msub><annotation encoding="application/x-tex">R_w</annotation></semantics></math>
+= brine resistivity <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mo>⋅</mo></mrow><annotation encoding="application/x-tex">\Omega\cdot</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mo>*</mo></msup><mo>,</mo><msup><mi>m</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">a^{*}, m^{*}</annotation></semantics></math>
+= clay-corrected tortuosity factor and cementation exponent <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+= porosity <span style="color: faint">fraction</span></span></p></li>
+</ul>
+<p>In clay-bearing sandstone the clay’s counterion conductivity
+short-circuits the rock, so the apparent Archie formation factor is too
+low and the cementation exponent comes out wrong. Waxman–Smits separates
+the two conduction paths: enter each plug’s porosity, Ro, and cation
+exchange capacity per unit pore volume (Qv), and the console removes the
+clay contribution to give the intrinsic F*, then fits F* = a*·φ^−m*. The
+clean-Archie fit is reported alongside so you can see how much the clay
+was biasing it.</p>
+<blockquote>
+<p><strong>References.</strong> Waxman, M.H. &amp; Smits, L.J.M. (1968).
+&quot;Electrical Conductivities in Oil-Bearing Shaly Sands.&quot; SPE Journal
+8(2), 107–122. Counterion conductance B correlation: Juhász, I. (1981),
+SPWLA 22nd Annual Logging Symposium. Compare with the clean-sand case of
+Archie, G.E. (1942), Trans. AIME 146, 54–62.</p>
+</blockquote>
+<h1 id="nmr-petrophysics">NMR Petrophysics</h1>
+<h2 id="nmr-porosity-permeability">NMR Porosity &amp; Permeability</h2>
+<p><strong>Fit T2 decay (ExpDec3), derive φ, CBW, BVI, FFI, and
+Coates/SDR permeability</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ϕ</mi><mrow><mi>N</mi><mi>M</mi><mi>R</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>A</mi><mo>⋅</mo><mi>K</mi></mrow><msub><mi>V</mi><mi>b</mi></msub></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>T</mi><mrow><mn>2</mn><mi>L</mi><mi>M</mi></mrow></msub><mo>=</mo><mo>exp</mo><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>f</mi><mi>i</mi></msub><mo>ln</mo><msub><mi>T</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub></mrow><mrow><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>f</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\phi_{NMR}=\frac{A\cdot K}{V_b},\qquad T_{2LM}=\exp\!\left(\frac{\sum_i f_i \ln T_{2i}}{\sum_i f_i}\right)</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>S</mi><mi>D</mi><mi>R</mi></mrow></msub><mo>=</mo><mi>a</mi><mspace width="0.167em"></mspace><msup><mi>ϕ</mi><mi>m</mi></msup><mspace width="0.167em"></mspace><msubsup><mi>T</mi><mrow><mn>2</mn><mi>L</mi><mi>M</mi></mrow><mrow><mspace width="0.167em"></mspace><mi>n</mi></mrow></msubsup><mspace width="2.0em"></mspace><mtext mathvariant="normal">(Kenyon et al., 1988)</mtext></mrow><annotation encoding="application/x-tex">k_{SDR}=a\,\phi^{m}\,T_{2LM}^{\,n}\qquad\text{(Kenyon et al., 1988)}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mrow><mi>C</mi><mi>o</mi><mi>a</mi><mi>t</mi><mi>e</mi><mi>s</mi></mrow></msub><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mi>ϕ</mi><mi>C</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mi>p</mi></msup><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><mi>F</mi><mi>F</mi><mi>I</mi></mrow><mrow><mi>B</mi><mi>V</mi><mi>I</mi></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mi>q</mi></msup><mspace width="2.0em"></mspace><mtext mathvariant="normal">(Timur–Coates)</mtext></mrow><annotation encoding="application/x-tex">k_{Coates}=\left(\frac{\phi}{C}\right)^{p}\left(\frac{FFI}{BVI}\right)^{q}\qquad\text{(Timur--Coates)}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mrow><mi>N</mi><mi>M</mi><mi>R</mi></mrow></msub><annotation encoding="application/x-tex">\phi_{NMR}</annotation></semantics></math>
+= NMR porosity <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math>
+= total signal amplitude of the echo train <span style="color: faint">instrument units</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>
+= instrument calibration constant <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math>
+per unit amplitude</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mi>b</mi></msub><annotation encoding="application/x-tex">V_b</annotation></semantics></math>
+= plug bulk volume <span style="color: faint">cm<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math></span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mn>2</mn><mi>L</mi><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">T_{2LM}</annotation></semantics></math>
+= logarithmic mean of the $T_2$ distribution <span style="color: faint">ms</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>i</mi></msub><annotation encoding="application/x-tex">f_i</annotation></semantics></math>
+= amplitude of distribution bin $i$ <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub><annotation encoding="application/x-tex">T_{2i}</annotation></semantics></math>
+= relaxation time of bin $i$ <span style="color: faint">ms</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi><mi>V</mi><mi>I</mi></mrow><annotation encoding="application/x-tex">BVI</annotation></semantics></math>
+= bulk volume irreducible, signal below the $T_2$ cutoff <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mi>F</mi><mi>I</mi></mrow><annotation encoding="application/x-tex">FFI</annotation></semantics></math>
+= free fluid index, signal above the cutoff <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>C</mi><annotation encoding="application/x-tex">C</annotation></semantics></math>
+= Timur–Coates calibration constant <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>,</mo><mi>m</mi><mo>,</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">a, m, n</annotation></semantics></math>
+= SDR coefficient and exponents <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>,</mo><mi>q</mi></mrow><annotation encoding="application/x-tex">p, q</annotation></semantics></math>
+= Timur–Coates exponents <span style="color: faint">dimensionless</span></span></p></li>
+</ul>
+<p>A CPMG echo train is inverted two ways — a three-component
+exponential fit and a regularised inverse Laplace transform — and the
+amplitude is converted to porosity through the instrument calibration
+constant and the plug bulk volume. The distribution is split at the
+clay-bound and BVI cutoffs to give CBW, BVI and FFI, from which the SDR
+and Timur–Coates permeabilities follow. Two calibration controls are
+provided because the generic literature coefficients routinely miss
+measured permeability by a factor of several: the SDR coefficient can be
+back-solved from a measured core permeability, and the BVI cutoff can be
+derived from a measured irreducible saturation instead of the 33 ms
+default. Coates is reported as not applicable when almost no signal
+falls below the BVI cutoff, since the FFI/BVI ratio is then unstable.
+The echo train is sampled logarithmically before inversion so that the
+early echoes carrying the clay-bound signal are preserved.</p>
+<blockquote>
+<p><strong>References.</strong> SDR model: Kenyon, W.E., Day, P.I.,
+Straley, C. &amp; Willemsen, J.F. (1988), &quot;A Three-Part Study of NMR
+Longitudinal Relaxation Properties of Water-Saturated Sandstones,&quot; SPE
+Formation Evaluation 3(3), 622–636. Timur–Coates model: Timur, A.
+(1968), JPT 20(6), 775–786; Coates, G.R., Xiao, L. &amp; Prammer, M.G.
+(1999), &quot;NMR Logging: Principles and Applications,&quot; Halliburton. T2
+cutoffs: Straley, C., Rossini, D., Vinegar, H., Tutunjian, P. &amp;
+Morriss, C. (1997), The Log Analyst 38(2), 84–94. Clay-bound water:
+Prammer, M.G. et al. (1996), The Log Analyst 37(6).</p>
+</blockquote>
+<h1 id="correlations-trends">Correlations &amp; Trends</h1>
+<h2 id="porositypermeability-correlation">Porosity–Permeability
+Correlation</h2>
+<p><strong>Fit k = f(φ) across your core dataset</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mi>a</mi><mspace width="0.167em"></mspace><msup><mi>ϕ</mi><mrow><mspace width="0.167em"></mspace><mi>b</mi></mrow></msup><mspace width="1.0em"></mspace><mtext mathvariant="normal">(power law)</mtext><mo>,</mo><mspace width="2.0em"></mspace><mi>k</mi><mo>=</mo><mi>a</mi><mspace width="0.167em"></mspace><msup><mi>e</mi><mrow><mspace width="0.167em"></mspace><mi>b</mi><mi>ϕ</mi></mrow></msup><mspace width="1.0em"></mspace><mtext mathvariant="normal">(exponential)</mtext></mrow><annotation encoding="application/x-tex">k=a\,\phi^{\,b}\quad\text{(power law)},\qquad k=a\,e^{\,b\phi}\quad\text{(exponential)}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+= permeability <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+= porosity <span style="color: faint">fraction</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>,</mo><mi>b</mi></mrow><annotation encoding="application/x-tex">a, b</annotation></semantics></math>
+= fitted coefficients of the chosen model <span style="color: faint">dimensionless</span></span></p></li>
+</ul>
+<p>Fits both a power-law and an exponential trend to a
+porosity–permeability dataset and recommends the better model by R². The
+purpose is to extend a handful of core measurements across uncored
+intervals; the fit is only as good as the rock-type consistency of the
+dataset, so a poor R² usually means several flow units have been mixed
+rather than that the regression failed.</p>
+<blockquote>
+<p><strong>References.</strong> Standard log-linear regression of core
+porosity–permeability pairs. Interpretation follows Tiab, D. &amp;
+Donaldson, E.C., &quot;Petrophysics: Theory and Practice of Measuring
+Reservoir Rock and Fluid Transport Properties,&quot; Gulf Professional
+Publishing. For pore-geometry-based rock typing, see the Rock Typing
+module.</p>
+</blockquote>
+<h2 id="rock-typing-winland-r35-fzi">Rock Typing (Winland r35 /
+FZI)</h2>
+<p><strong>Pore-throat radius and flow-zone indicator from routine φ–k
+data</strong></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mn>10</mn></msub><msub><mi>r</mi><mn>35</mn></msub><mo>=</mo><mn>0.732</mn><mo>+</mo><mn>0.588</mn><msub><mo>log</mo><mn>10</mn></msub><mi>k</mi><mo>−</mo><mn>0.864</mn><msub><mo>log</mo><mn>10</mn></msub><mi>ϕ</mi><mspace width="2.0em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> in mD</mtext></mrow><mo>,</mo><mspace width="0.222em"></mspace><mi>ϕ</mi><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> in </mtext><mspace width="0.333em"></mspace></mrow><mi>%</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\log_{10} r_{35}=0.732+0.588\log_{10}k-0.864\log_{10}\phi\qquad(k\text{ in mD},\ \phi\text{ in }\%)</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><mi>Q</mi><mi>I</mi><mo>=</mo><mn>0.0314</mn><msqrt><mfrac><mi>k</mi><mi>ϕ</mi></mfrac></msqrt><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>ϕ</mi><mi>z</mi></msub><mo>=</mo><mfrac><mi>ϕ</mi><mrow><mn>1</mn><mo>−</mo><mi>ϕ</mi></mrow></mfrac><mo>,</mo><mspace width="2.0em"></mspace><mi>F</mi><mi>Z</mi><mi>I</mi><mo>=</mo><mfrac><mrow><mi>R</mi><mi>Q</mi><mi>I</mi></mrow><msub><mi>ϕ</mi><mi>z</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">RQI=0.0314\sqrt{\frac{k}{\phi}},\qquad \phi_z=\frac{\phi}{1-\phi},\qquad FZI=\frac{RQI}{\phi_z}</annotation></semantics></math></p>
+<p><span><em>where:</em></span></p>
+<ul>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>r</mi><mn>35</mn></msub><annotation encoding="application/x-tex">r_{35}</annotation></semantics></math>
+= pore-throat radius at 35\{}% mercury saturation <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+= permeability <span style="color: faint">mD</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+= porosity (fraction in $RQI$, percent in the $r_{35}$ regressions)
+<span style="color: faint">see note</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><mi>Q</mi><mi>I</mi></mrow><annotation encoding="application/x-tex">RQI</annotation></semantics></math>
+= reservoir quality index <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>m</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mi>z</mi></msub><annotation encoding="application/x-tex">\phi_z</annotation></semantics></math>
+= normalised porosity, $\{}phi/(1-\{}phi)$ <span style="color: faint">dimensionless</span></span></p></li>
+<li><p><span><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mi>Z</mi><mi>I</mi></mrow><annotation encoding="application/x-tex">FZI</annotation></semantics></math>
+= flow zone indicator <span style="color: faint"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>m</span></span></p></li>
+</ul>
+<p>Turns an ordinary porosity–permeability table into rock types. For
+each plug the console computes the Winland r35 pore-throat radius (the
+throat size at 35% mercury saturation, which best correlates with flow),
+the Pittman r35 regression for comparison, and the reservoir quality
+index and flow-zone indicator. Plugs sharing an FZI belong to the same
+hydraulic flow unit and should fall on one line in the RQI–φz plot,
+which is the basis for permeability prediction in uncored intervals.</p>
+<blockquote>
+<p><strong>References.</strong> Winland r35 as published in Kolodzie, S.
+(1980), SPE 9382; refined regressions in Pittman, E.D. (1992),
+&quot;Relationship of Porosity and Permeability to Various Parameters Derived
+from Mercury Injection–Capillary Pressure Curves for Sandstone,&quot; AAPG
+Bulletin 76(2), 191–198. Flow-zone indicator: Amaefule, J.O., Altunbay,
+M., Tiab, D., Kersey, D.G. &amp; Keelan, D.K. (1993), SPE 26436.
+Port-size classes after Hartmann, D.J. &amp; Beaumont, E.A. (1999), AAPG
+Treatise.</p>
+</blockquote>
+<h1 id="methods-and-conventions">Methods and Conventions</h1>
+<h2 id="calibration-philosophy">Calibration philosophy</h2>
+<p>Every empirical permeability transform in this software — SDR,
+Timur–Coates, Swanson, Winland, Thomeer — carries coefficients that were
+fitted to a particular set of rocks. Applied unchanged to a different
+formation they are commonly wrong by a factor of several, and that is a
+property of the correlations, not a defect of the measurement. Wherever
+it is possible the console therefore exposes the coefficient and
+provides a way to anchor it to your own core data, and reports the
+generic literature value alongside so the size of the correction is
+visible.</p>
+<h2 id="curve-smoothing">Curve smoothing</h2>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>y</mi><mi>i</mi><mrow><mspace width="0.167em"></mspace><mo>*</mo></mrow></msubsup><mo>=</mo><mfrac><mn>1</mn><mn>35</mn></mfrac><mrow><mo stretchy="true" form="prefix">(</mo><mo>−</mo><mn>3</mn><msub><mi>y</mi><mrow><mi>i</mi><mo>−</mo><mn>2</mn></mrow></msub><mo>+</mo><mn>12</mn><msub><mi>y</mi><mrow><mi>i</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><mn>17</mn><msub><mi>y</mi><mi>i</mi></msub><mo>+</mo><mn>12</mn><msub><mi>y</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>−</mo><mn>3</mn><msub><mi>y</mi><mrow><mi>i</mi><mo>+</mo><mn>2</mn></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="1.0em"></mspace><mtext mathvariant="normal">(5-point quadratic)</mtext></mrow><annotation encoding="application/x-tex">y_i^{\,*}=\frac{1}{35}\left(-3y_{i-2}+12y_{i-1}+17y_i+12y_{i+1}-3y_{i+2}\right)\quad\text{(5-point quadratic)}</annotation></semantics></math></p>
+<p>Every chart offers Savitzky–Golay smoothing at 5, 7 or 9 points. The
+quadratic Savitzky–Golay kernel is used in preference to a moving
+average because it preserves peak height and position, which matters
+where the peak is itself the measurement — T2 distributions and
+pore-throat spectra. Endpoints are left unsmoothed rather than
+extrapolated. Smoothing is applied only to what is drawn: every reported
+value, fitted parameter and R² is computed from the raw data, and a note
+appears beneath any chart that is being displayed smoothed.</p>
+<blockquote>
+<p><strong>Reference.</strong> Savitzky, A. &amp; Golay, M.J.E. (1964).
+&quot;Smoothing and Differentiation of Data by Simplified Least Squares
+Procedures.&quot; Analytical Chemistry 36(8), 1627–1639.</p>
+</blockquote>
+<h2 id="numerical-differentiation">Numerical differentiation</h2>
+<p>The JBN relative-permeability calculation differentiates the
+production and pressure data twice, which strongly amplifies scatter —
+particularly just after breakthrough. A five-point Savitzky–Golay
+smoother is therefore applied to the monotone series before
+differentiation, and can be switched off from the input fields. Points
+that come out negative or otherwise unphysical are filtered rather than
+plotted.</p>
+<h2 id="brine-resistivity-and-temperature">Brine resistivity and
+temperature</h2>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mrow><mi>w</mi><mn>2</mn></mrow></msub><mo>=</mo><msub><mi>R</mi><mrow><mi>w</mi><mn>1</mn></mrow></msub><mspace width="0.167em"></mspace><mfrac><mrow><msub><mi>T</mi><mn>1</mn></msub><mo>+</mo><mn>21.5</mn></mrow><mrow><msub><mi>T</mi><mn>2</mn></msub><mo>+</mo><mn>21.5</mn></mrow></mfrac><mspace width="2.0em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> in </mtext><mspace width="0.333em"></mspace></mrow><mo>∘</mo></msup><mi mathvariant="normal">C</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">R_{w2}=R_{w1}\,\frac{T_1+21.5}{T_2+21.5}\qquad (T\text{ in }^{\circ}\mathrm{C})</annotation></semantics></math></p>
+<p>Brine resistivity is strongly temperature-dependent, so it must be
+stated at the same temperature as the resistivity measurements before a
+formation factor is formed. The electrical modules apply the Arps
+correction, Rw₂ = Rw₁·(T₁+21.5)/(T₂+21.5) with temperatures in °C, and
+report when a correction has been made. The resistivity index needs no
+such correction because it is a ratio taken on the same plug, so
+temperature cancels.</p>
+<blockquote>
+<p><strong>Reference.</strong> Arps, J.J. (1953). &quot;The Effect of
+Temperature on the Density and Electrical Resistivity of Sodium Chloride
+Solutions.&quot; Journal of Petroleum Technology 5(10), 17–20.</p>
+</blockquote>
+<h2 id="constrained-regression">Constrained regression</h2>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>n</mi><mo accent="true">̂</mo></mover><mo>=</mo><mo>−</mo><mfrac><mrow><mo>∑</mo><msub><mi>x</mi><mi>i</mi></msub><msub><mi>y</mi><mi>i</mi></msub></mrow><mrow><mo>∑</mo><msubsup><mi>x</mi><mi>i</mi><mn>2</mn></msubsup></mrow></mfrac><mspace width="1.0em"></mspace><mtext mathvariant="normal">vs.</mtext><mspace width="1.0em"></mspace><mrow><mtext mathvariant="normal">unconstrained </mtext><mspace width="0.333em"></mspace></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>a</mi><mo accent="true">̂</mo></mover><mo>,</mo><mover><mi>n</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\hat{n}=-\frac{\sum x_i y_i}{\sum x_i^{2}}\quad\text{vs.}\quad \text{unconstrained }(\hat{a},\hat{n})</annotation></semantics></math></p>
+<p>Two of the Archie fits have a physically fixed point and are fitted
+accordingly. The resistivity index must equal one at full water
+saturation, so the saturation exponent is estimated with the line forced
+through the origin in log–log space; the unconstrained fit is reported
+alongside, because a large intercept is a useful warning that the data
+are noisy or non-Archie. The formation factor is reported both with a
+free tortuosity factor and with Archie’s original a = 1 constraint.</p>
+<h2 id="centrifuge-inversion">Centrifuge inversion</h2>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>S</mi><mo accent="true">‾</mo></mover><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><msub><mi>P</mi><mrow><mi>c</mi><mn>1</mn></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.167em"></mspace><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.167em"></mspace><mi mathvariant="normal">d</mi><mi>u</mi></mrow><annotation encoding="application/x-tex">\bar{S}(P_{c1})=\int_0^1 S(uP_{c1})\,g(u)\,\mathrm{d}u</annotation></semantics></math></p>
+<p>Converting an average saturation measured in a centrifuge into the
+saturation at the inlet face is an inverse problem. The Hassler–Brunner
+first approximation is exact only in the limit where the plug is short
+relative to its distance from the axis. This console also solves the
+underlying integral equation directly, as a regularised least-squares
+problem with a monotonicity constraint, and selects between the two on
+the basis of the r1/r2 ratio — round-trip tests on synthetic curves show
+the direct inversion to be substantially more accurate for long plugs
+and the Hassler–Brunner approximation better as r1/r2 approaches one.
+Both values are always reported.</p>
+<blockquote>
+<p><strong>Reference.</strong> Hassler, G.L. &amp; Brunner, E. (1945),
+Trans. AIME 160, 114–123; Forbes, P. (1994), The Log Analyst 35(4),
+31–53.</p>
+</blockquote>
+<h2 id="measurement-uncertainty">Measurement uncertainty</h2>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><mi>k</mi></msub><mi>k</mi></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mrow><mi>∂</mi><mo>ln</mo><mi>k</mi></mrow><mrow><mi>∂</mi><mo>ln</mo><msub><mi>x</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>u</mi><msub><mi>x</mi><mi>i</mi></msub></msub><msub><mi>x</mi><mi>i</mi></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>U</mi><mn>95</mn></msub><mo>=</mo><mn>2</mn><msub><mi>u</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">\left(\frac{u_k}{k}\right)^{2}=\sum_i \left(\frac{\partial \ln k}{\partial \ln x_i}\right)^{2}\left(\frac{u_{x_i}}{x_i}\right)^{2},\qquad U_{95}=2u_k</annotation></semantics></math></p>
+<p>Darcy’s law is a product of measured quantities, so relative
+variances add and the plug diameter counts twice because area goes as
+the square of diameter. The uncertainty module propagates instrument
+tolerances on this basis and reports the expanded uncertainty at a
+coverage factor of two, together with a ranking of which instrument
+dominates the error budget.</p>
+<blockquote>
+<p><strong>Reference.</strong> JCGM 100:2008. &quot;Evaluation of Measurement
+Data — Guide to the Expression of Uncertainty in Measurement&quot; (GUM),
+§5.</p>
+</blockquote>
+<h2 id="data-export">Data export</h2>
+<p>Two exports are offered, and they differ in scope. Plotted points
+(CSV), beneath each figure, contains only the points drawn on that
+chart. Full results (CSV), on the result card, contains the complete
+computed table for every row, including the intermediate columns the
+chart never shows — for the centrifuge module, for instance, it carries
+both the Hassler-Brunner and the direct-inversion saturations side by
+side. When a chart is displayed smoothed the exported filename records
+the smoothing window, so a smoothed export cannot be mistaken for raw
+data. Figures export separately at publication resolution.</p>
+<h2 id="modifying-a-figure">Modifying a figure</h2>
+<p>Every chart carries a Modify control that opens a panel for
+presentation changes: a title or sample name, axis labels, axis minima
+and maxima, and gridlines on or off. A live preview shows the effect
+before anything is exported, and the title is drawn inside the exported
+image rather than only on screen. Axis limits clip the view alone — the
+fit and every reported value continue to use the whole dataset, so a
+figure can be zoomed to a region of interest without altering the result
+behind it.</p>
+<h2 id="user-applied-trend-lines">User-applied trend lines</h2>
+<p>On charts of discrete measurements the same panel offers a trend
+line: the module’s own fit, no line at all, or a linear, power or
+exponential fit applied by the user, with the equation and R² shown
+beneath the plot and carried into the export. R² is computed against the
+untransformed measurements rather than in the space each model
+linearises to, so the three models can be compared on equal terms. A
+trend chosen here is an annotation on the figure and never feeds the
+reported result, which is always computed by the module’s own method
+from the raw data. The control is withheld on charts of continuous
+curves and distributions — relative permeability, T2 spectra — where a
+trend line would not be meaningful.</p>
+<h2 id="when-a-calculation-fails">When a calculation fails</h2>
+<p>If a screen fails it is replaced by an error panel rather than a
+blank page, and the rest of the application stays usable. The panel
+shows a reference code derived from the fault itself, so the same
+problem always produces the same code, together with a report — version,
+module, error and timestamp — that can be sent in one action. Nothing
+entered is transmitted anywhere: all calculation happens in the browser,
+and a report contains only what the user chooses to send.</p>
+<h2 id="units">Units</h2>
+<p>Each input field states its expected unit and the console converts
+internally; permeability is reported in millidarcy, pressure in psi or
+atm as labelled, lengths in centimetres and viscosity in centipoise.
+Saturations and porosity are fractions, not percentages, except where a
+field is explicitly labelled as a percentage. A separate unit converter
+is provided under the Converter tab, and the conversion factors it uses
+are exact definitions rather than rounded values.</p>
+<h1 id="limitations">Limitations</h1>
+<ul>
+<li><p>Empirical permeability transforms are only as good as their
+calibration. Treat any uncalibrated permeability from NMR or mercury
+injection as an order-of-magnitude estimate until it is anchored to
+measured core.</p></li>
+<li><p>Fixed T2 and saturation cutoffs are regional conventions. The 33
+ms sandstone and 92–100 ms carbonate values are Gulf of Mexico defaults
+and should be confirmed against core wherever possible.</p></li>
+<li><p>The Timur–Coates model becomes unstable as bound water approaches
+zero, and is reported as not applicable in clean, near-irreducible rock
+rather than returning a spurious number.</p></li>
+<li><p>The contact-angle tool is a manual tangent construction, so its
+accuracy depends on point placement; it is not automated drop-shape
+analysis.</p></li>
+<li><p>Fits are ordinary least squares in the stated transform space
+unless a physical constraint is noted, and do not carry confidence
+intervals except in the dedicated uncertainty module.</p></li>
+<li><p>Ambient plug measurements overstate reservoir permeability. Use
+the stress-dependence module where net confining stress
+matters.</p></li>
+</ul>
+<h1 id="standards">Standards</h1>
+<p>Laboratory procedures follow the American Petroleum Institute’s
+<em>Recommended Practices for Core Analysis</em> (API RP 40, 2nd
+edition, 1998), the reference standard for routine and special core
+analysis. Uncertainty is expressed following JCGM 100:2008 (GUM).
+Individual module citations are listed with each entry above.</p>
+<blockquote>
+<p>Results are engineering estimates that depend on input data and local
+calibration. Confirm important values against core measurements before
+relying on them. Provided as is, without warranty.</p>
+</blockquote>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "skal-bench",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SKAL Bench — Routine & Special Core Analysis",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
+  },
+  "dependencies": {
+    "lucide-react": "0.383.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "gh-pages": "^6.1.1",
+    "vite": "^5.3.1"
+  }
+}

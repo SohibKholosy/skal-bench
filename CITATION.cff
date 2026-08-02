@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: "SKAL Bench: Routine and Special Core Analysis"
+message: "If you use this software in published work, please cite it using these metadata."
+type: software
+authors:
+  - family-names: Kholosy
+    given-names: Sohaib
+    affiliation: "Kuwait Institute for Scientific Research (KISR), Petroleum Research Center"
+version: 1.0.0
+date-released: 2026-08-01
+license: MIT
+abstract: >-
+  A browser-based console for routine and special core analysis. It covers gas and liquid
+  permeability with Klinkenberg correction, pulse decay, porosity and grain density by
+  gravimetric and helium methods, mercury injection capillary pressure, centrifuge capillary
+  pressure, relative permeability by steady-state, JBN and Brooks-Corey methods, wettability by
+  Amott, USBM and contact angle, electrical properties including Archie parameters and the
+  Waxman-Smits shaly-sand correction, low-field NMR petrophysics, stress dependence of
+  permeability, rock typing, and measurement uncertainty. Every module states the equation it
+  evaluates and the published source it follows.
+keywords:
+  - special core analysis
+  - SCAL
+  - routine core analysis
+  - petrophysics
+  - relative permeability
+  - capillary pressure
+  - wettability
+  - Archie parameters
+  - NMR petrophysics
+  - reservoir engineering
