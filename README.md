@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21757513.svg)](https://doi.org/10.5281/zenodo.21757513)
+[![DOI](https://zenodo.org/badge/1319979794.svg)](https://doi.org/10.5281/zenodo.21757512)
 # SKAL Bench
 
 **Routine & Special Core Analysis** — a browser-based console for petroleum core analysis.
