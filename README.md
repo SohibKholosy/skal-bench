@@ -7,7 +7,7 @@ Enter laboratory measurements and get the result together with the equation eval
 published source behind it. Every calculation runs in the browser; nothing is uploaded and no
 account is required.
 
-**Live site:** https://aohibkholosy.github.io/skal-bench/ *(update after your first deployment)*
+**Live site:** https://sohibkholosy.github.io/skal-bench/ *(update after your first deployment)*
 
 ---
 
