@@ -54,7 +54,7 @@ const C = { ...PALETTES.dark };
  * a module or feature is added, MAJOR if a calculation's output changes such that an earlier result
  * would no longer reproduce. That last rule is the one that matters for a scientific tool: a user
  * quoting a number from this software needs to be able to say which version produced it. */
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.9";
 const APP_RELEASED = "August 2026";
 /* Citation string, assembled from the version constants so it can never quote a stale version.
  * APP_URL should become the live address once deployed — until then the citation still resolves
