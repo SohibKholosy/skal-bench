@@ -59,7 +59,7 @@ const APP_RELEASED = "August 2026";
 /* Citation string, assembled from the version constants so it can never quote a stale version.
  * APP_URL should become the live address once deployed — until then the citation still resolves
  * because the software name and version identify the release unambiguously. */
-const APP_URL = "https://github.com/SohibKholosy/skal-bench"; // <-- update after deploying
+const APP_URL = "https://doi.org/10.5281/zenodo.21757512"; // <-- update after deploying DONE
 const citationText = () =>
   `Kholosy, S. (${APP_RELEASED.split(" ")[1]}). SKAL Bench: Routine and Special Core Analysis ` +
   `(Version ${APP_VERSION}) [Computer software]. ${APP_URL}`;
