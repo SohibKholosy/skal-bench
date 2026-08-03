@@ -9264,7 +9264,7 @@ function AboutScreen({ onBack, section }) {
         </AboutP>
         <AboutP>I am also grateful to:</AboutP>
         <ul style={{ margin: "0 0 14px", paddingLeft: 18 }}>
-          {["Dr. Waleed Al-Bazzaz", "Dr. Salim Ok", "Dr. Adel Al-Otaibi", "Dr. Abdulaziz Al-Makimi"].map((n) => (
+          {["Dr. Waleed Al-Bazzaz", "Dr. Salim Ok", "Mr.Abdullah AL-Bloushi", "Dr. Adel Al-Otaibi", "Dr. Abdulaziz Al-Makimi"].map((n) => (
             <li key={n} style={{ fontSize: 13.5, lineHeight: 1.8, color: C.text, ...fBody }}>{n}</li>
           ))}
         </ul>
