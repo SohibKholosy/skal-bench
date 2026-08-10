@@ -32,7 +32,7 @@ resolution, and CSV export of both plotted points and full result tables.
 ## Documentation
 
 - In-app: **How to use** and **Documentation** links in the footer
-- Standalone: [`docs/skal-bench-v1.0.0-documentation.pdf`](docs/) and the HTML equivalent — every
+- Standalone: the documentation artifacts in [`docs/`](docs/) — every
   module with its equation, symbol definitions with units, and citations
 - [`docs/VALIDATION_PROTOCOL.md`](docs/VALIDATION_PROTOCOL.md) — how to verify each module against
   the literature
