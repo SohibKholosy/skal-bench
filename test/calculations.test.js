@@ -7,7 +7,7 @@ const closeTo = (actual, expected, tolerance = 1e-10) => {
 };
 const unitAreaDiameter = Math.sqrt(4 / Math.PI);
 
-test("gasSingle returns the analytic mean and sample standard deviation", () => {
+test("gasSingle returns the analytic mean and production standard deviation", () => {
   const result = calculationFunctions.gasSingle(
     { L: 10, D: unitAreaDiameter, mu: 0.02 },
     [{ P1: 3, P2: 1, Q: 0.1 }, { P1: 3, P2: 1, Q: 0.2 }],
