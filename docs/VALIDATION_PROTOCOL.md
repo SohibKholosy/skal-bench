@@ -3,7 +3,7 @@
 How to confirm that every module produces correct, reproducible values, and how to get an AI
 assistant to verify them independently rather than simply agreeing with you.
 
-Applies to version 1.0.0. Record the version with every result — a later release may change a
+Applies to version 1.0.9. Record the version with every result — a later release may change a
 calculation, and a validation record without a version number cannot be interpreted.
 
 ---
@@ -106,7 +106,7 @@ tool was validated, and what you re-run after any change.
 
 | Module | Test | Source | Expected | Obtained | Deviation | Verdict | Version | Date |
 |---|---|---|---|---|---|---|---|---|
-| Formation Factor | A | analytic | m = 2.000 | 2.000 | 0.00% | Pass | 1.0.0 | |
+| Formation Factor | A | analytic | m = 2.000 | 2.000 | 0.00% | Pass | 1.0.9 | |
 | MICP Washburn | B | Washburn (1921) | r = 107.8 µm @ 1 psia | | | | 1.0.0 | |
 
 Re-run the full table whenever the major or minor version changes. Patch releases by definition
