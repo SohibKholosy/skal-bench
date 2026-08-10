@@ -20,15 +20,9 @@ This report follows `docs/VALIDATION_PROTOCOL.md`: analytic round-trip testing, 
 
 ## DOI investigation
 
-Three conflicting DOI values were found:
+The Zenodo record [21763629](https://zenodo.org/records/21763629) was directly verified. It identifies **SKAL Bench: Routine and Special Core Analysis**, software version **v1.0.9**, published August 2, 2026, and links its release to `https://github.com/SohibKholosy/skal-bench/tree/v1.0.9`.
 
-| Location | DOI |
-|---|---|
-| Application citation metadata | 10.5281/zenodo.21757512 |
-| `CITATION.cff` | 10.5281/zenodo.21757513 |
-| README badge/link | 10.5281/zenodo.21763629 |
-
-Direct Zenodo/DOI record verification was unavailable in this execution environment, and exact-DOI searches returned no verifiable record. **No DOI was selected or replaced.** The canonical DOI must be verified in the Zenodo owner account or a resolvable Zenodo record, then updated atomically in the README, application metadata, `CITATION.cff`, and documentation. This is **REVIEW REQUIRED**, not a scientific-output defect.
+The verified canonical version DOI is **10.5281/zenodo.21763629**. The prior conflicting values `10.5281/zenodo.21757512` (application metadata) and `10.5281/zenodo.21757513` (`CITATION.cff`) were replaced with this DOI. The README already used the verified DOI. This is citation-metadata correction only; no scientific calculation output changed.
 
 ## Module audit
 
@@ -62,7 +56,7 @@ Direct Zenodo/DOI record verification was unavailable in this execution environm
 1. **No calculation bug is confirmed.** Consequently, no scientific output changed and no scientific formula was edited.
 2. **Regression gap:** Phase 1 protects only gas single-point, Klinkenberg steady gas, pulse decay, and liquid coreflood. The remaining scientifically significant modules require analytic and/or published-example tests before any implementation correction.
 3. **Citation gap:** The modules marked MINOR or REVIEW REQUIRED need bibliographic verification and, where currently absent, module-level authoritative source traceability.
-4. **DOI conflict:** Manual Zenodo-record verification is required before changing any DOI.
+4. **DOI consistency:** The verified Zenodo record DOI was applied to application and CFF metadata.
 5. **Version mismatch:** The protocol and CFF version fields were corrected to 1.0.9 to match the application and package metadata. DOI values were intentionally left untouched.
 
 ## Change log
@@ -70,6 +64,7 @@ Direct Zenodo/DOI record verification was unavailable in this execution environm
 - Updated `docs/VALIDATION_PROTOCOL.md` from version 1.0.0 to 1.0.9, including its sample validation-record version.
 - Updated `CITATION.cff` version from 1.0.0 to 1.0.9.
 - Added this report.
+- Corrected application and CFF DOI metadata to 10.5281/zenodo.21763629 after direct Zenodo-record verification.
 - **Scientific outputs changed:** none.
 
 ## Reproducibility and validation
