@@ -142,3 +142,11 @@ The current code:
 - **Automated coverage:** the same synthetic dataset corrects Rw from 20°C to 70°C before recovering the known a and m.
 - **Limitations:** Arps is empirical and assumes the same brine composition between temperatures; it does not replace a direct brine-resistivity measurement at test conditions.
 
+### Stress-dependent permeability
+
+- **Status:** MINOR — the implementation is validated as an empirical log-linear fit, not as a universally derived constitutive law.
+- **Sources checked:** API RP 40 identifies net confining stress as the relevant measurement condition; Fatt and Davis (1952), *Transactions of AIME* **195**, 329–336, and Jones and Owens (1980), *Journal of Petroleum Technology* **32**(9), 1631–1640, support stress-sensitive permeability measurements.
+- **Equation/method checked:** ln k = ln k0 − cσ, where c is 1/psi when σ is supplied in psi; k0 is an extrapolation to zero net stress and k(σres) is an interpolation/extrapolation from that fit.
+- **Automated coverage:** an exact synthetic exponential series recovers c=0.001 1/psi, k0=100 mD, k at 2000 psi, and R²=1.
+- **Limitations:** do not extrapolate materially beyond the measured stress range without laboratory support. Hysteresis, stress-path dependence, pore collapse, and non-exponential response are outside this empirical model.
+
