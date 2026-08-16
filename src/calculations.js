@@ -297,3 +297,11 @@ calculationFunctions.waxmanSmits = (s, rows) => {
         chart: { type: "xyfit", points: pts.map((x) => ({ x: x.lx, y: x.ly })), fit, xLabel: "log₁₀ porosity", yLabel: "log₁₀ F* (clay-corrected)" },
       };
     };
+
+
+// Washburn (1921) mercury-intrusion diameter: P [psia], sigma [dyne/cm], theta [degrees], result [um].
+calculationFunctions.micpWashburnDiameter = (pressurePsia, sigmaDynePerCm, thetaDegrees) => {
+  const psiToPa = 6894.757293168;
+  const dynePerCmToNPerM = 1e-3;
+  return ((-4 * sigmaDynePerCm * dynePerCmToNPerM * Math.cos((thetaDegrees * Math.PI) / 180)) / (pressurePsia * psiToPa)) * 1e6;
+};
