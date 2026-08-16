@@ -29,7 +29,7 @@ export const relPermSteady = (s, rows, fmt) => {
         alt: { label: `krw at Sw=${fmt(pts[pts.length - 1]?.Sw, 3)} (highest Sw tested, ≈ residual-oil endpoint)`, value: krwAtSor, unit: "fraction" },
         chart: { type: "relperm", data: pts },
       };
-    },
+};
 
 // Johnson–Bossler–Naumann unsteady-state relative-permeability reduction.
 export const relPermJBN = (s, rows, fmtForCentrifuge) => {
