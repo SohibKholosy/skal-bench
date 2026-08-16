@@ -2,6 +2,7 @@ import { avg, linreg } from "./math.js";
 import { gasSteady, gasSingle, liquidCoreflood, pulseDecay } from "./permeability.js";
 import { coreyPredict, relPermJBN, relPermSteady } from "./relativePermeability.js";
 import { centrifugePc, micpWashburnDiameter } from "./capillaryPressure.js";
+import { amottUsbm, CA_SETUPS, caSetup, contactAngle } from "./wettability.js";
 
 const fmtForCentrifuge = (n, d = 3) => (Number.isFinite(n) ? n.toFixed(d) : "—");
 
@@ -15,6 +16,10 @@ export const calculationFunctions = {
   coreyPredict,
   centrifugePc: (s, rows) => centrifugePc(s, rows, fmtForCentrifuge),
   micpWashburnDiameter,
+  amottUsbm: (s, rows) => amottUsbm(s, rows, fmtForCentrifuge),
+  contactAngle,
+  contactAngleSetups: CA_SETUPS,
+  contactAngleSetup: caSetup,
 };
 
 // Waxman–Smits conductive-clay formation-factor implementation extracted from App.jsx for regression testing.
