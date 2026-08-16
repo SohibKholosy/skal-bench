@@ -4,7 +4,7 @@ import {
   Tooltip, ResponsiveContainer, Cell, ReferenceDot, ReferenceLine,
 } from "recharts";
 import * as XLSX from "xlsx";
-import { calculationFunctions } from "./calculations.js";
+import { calculationFunctions } from "./calculations/index.js";
 import {
   Wind, Droplets, Activity, Beaker, ArrowLeft, Download, Upload, Plus, Trash2,
   Lock, CheckCircle2, AlertCircle, Loader2, FlaskConical, ChevronRight,
