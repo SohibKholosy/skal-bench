@@ -3506,7 +3506,7 @@ function RelPermHub({ onOpen, onBack }) {
 
 /* ============================== COREY ENDPOINT PREDICTION + WETTABILITY ============================== */
 /* Relative permeability is defined in the literature as the ratio of effective to absolute permeability and
- * must fall between 0 and 1 (Amyx, Bass & Whiting, 1960; Wikipedia "Relative permeability"; AAPG Wiki). SCAL
+ * must fall between 0 and 1 (Amyx, Bass & Whiting, 1960). SCAL
  * results are conventionally reported relative to a single reference — the oil permeability at Swi — so both
  * kro and krw here are normalized against Kro@Swi (Ahmed, T., Reservoir Engineering Handbook, 4th ed., 2010):
  * kro is self-normalized (=1.0 at Swi by definition), and krw@Sor is expressed as a fraction of Kro@Swi. If a
