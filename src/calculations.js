@@ -464,3 +464,8 @@ calculationFunctions.rockTyping = (s, rows) => {
         chart: { type: "xyfit", points: pts.map((x) => ({ x: Math.log10(x.phiz), y: Math.log10(x.RQI) })), fit, xLabel: "log₁₀ φz  (normalised porosity)", yLabel: "log₁₀ RQI (µm)" },
       };
     };
+
+
+// Dataset-specific porosity-permeability regressions; coefficients are not transferable outside the fitted data.
+calculationFunctions.fitPowerLaw = (pts) => { const xs=pts.map(p=>Math.log(p.phi)), ys=pts.map(p=>Math.log(p.k)); const {slope,intercept,r2}=linreg(xs,ys); return {c1:slope,c0:Math.exp(intercept),r2,evalAt:(phi)=>Math.exp(intercept)*Math.pow(phi,slope),eq:`k = ${fmtForCentrifuge(Math.exp(intercept),3)} · phi^${fmtForCentrifuge(slope,3)}`}; };
+calculationFunctions.fitExponential = (pts) => { const xs=pts.map(p=>p.phi), ys=pts.map(p=>Math.log(p.k)); const {slope,intercept,r2}=linreg(xs,ys); return {a:intercept,b:slope,r2,evalAt:(phi)=>Math.exp(intercept+slope*phi),eq:`k = exp(${fmtForCentrifuge(intercept,3)} + ${fmtForCentrifuge(slope,3)}·phi)`}; };
