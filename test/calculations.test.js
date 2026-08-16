@@ -52,3 +52,25 @@ test("liquidCoreflood recovers Darcy permeability from proportional flow", () =>
   closeTo(result.alt.value, 20);
   closeTo(result.r2, 1);
 });
+
+
+test("centrifugePc reproduces the Hassler–Brunner short-core pressure and inlet saturation", () => {
+  // Hassler–Brunner first approximation: S1 = Sbar + Pc dSbar/dPc.
+  // Source: Hassler & Brunner (1945), Trans. AIME 160, 114–123.
+  // A linear synthetic Sbar(Pc) makes the finite-difference derivative exact.
+  const sample = { drho: 1, r1: 90, r2: 100 };
+  const pressureAt = (rpm) => {
+    const omega = (2 * Math.PI * rpm) / 60;
+    return 0.5 * 1000 * sample.drho * omega ** 2 * ((sample.r2 ** 2 - sample.r1 ** 2) * 1e-4) / 6894.757293168;
+  };
+  const rows = [1000, 2000, 3000, 4000].map((rpm) => {
+    const pc = pressureAt(rpm);
+    return { rpm, Sbar: 0.9 - 0.002 * pc };
+  });
+  const result = calculationFunctions.centrifugePc(sample, rows);
+  assert.match(result.headline.label, /Hassler-Brunner/);
+  result.rows.forEach((row) => {
+    closeTo(row.Pc, pressureAt(row.rpm), 1e-12);
+    closeTo(row.S1, 0.9 - 0.004 * row.Pc, 1e-12);
+  });
+});
