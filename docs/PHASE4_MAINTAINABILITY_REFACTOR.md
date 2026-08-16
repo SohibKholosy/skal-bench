@@ -42,3 +42,13 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Updated `App.jsx` and the regression suite to import `src/calculations/index.js` directly.
 - Behavior-preservation check: 14/14 regression tests passed after this move.
 - No scientific issues were discovered or addressed in this increment.
+
+## Completed increment: shared math helpers and permeability
+
+- Created `src/calculations/math.js` and moved the unchanged helper bodies for `areaFromDiameter`, `avg`, `stdev`, `linreg`, and `linregOrigin`.
+- Created `src/calculations/permeability.js` and moved the unchanged implementations of `gasSteady`, `gasSingle`, `pulseDecay`, and `liquidCoreflood`.
+- `src/calculations/index.js` now imports and exposes those four permeability functions through the existing `calculationFunctions` entrypoint.
+- The remaining unextracted functions in `index.js` use `avg` and `linreg`; explicit imports from `math.js` preserve that dependency without duplicating helper logic.
+- Behavior-preservation check: 14/14 regression tests passed after the extraction. No scientific or user-visible output changed.
+- The production dependency direction is one-way: `index.js → math.js`, `index.js → permeability.js`, and `permeability.js → math.js`; no circular import was introduced.
+- Current `src/calculations/index.js`: 365 lines. The remaining technical debt is the still-unextracted domain functions in that file; they will be moved only as separately tested increments.
