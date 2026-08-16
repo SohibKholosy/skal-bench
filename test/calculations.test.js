@@ -174,3 +174,9 @@ test("rockTyping reproduces Winland r35 and Amaefule RQI/FZI units", () => {
  closeTo(p.r35W,Math.pow(10,.732+.588*Math.log10(k)-.864*Math.log10(20)));
  closeTo(p.RQI,.0314*Math.sqrt(k/phi)); closeTo(p.FZI,p.RQI/(phi/(1-phi)));
 });
+
+
+test("porosity-permeability regressions recover deterministic power and exponential trends", () => {
+ const power=calculationFunctions.fitPowerLaw([.1,.2,.3,.4].map(phi=>({phi,k:5*phi**2}))); closeTo(power.c0,5); closeTo(power.c1,2); closeTo(power.evalAt(.5),1.25);
+ const exp=calculationFunctions.fitExponential([.1,.2,.3,.4].map(phi=>({phi,k:Math.exp(1+3*phi)}))); closeTo(exp.a,1); closeTo(exp.b,3); closeTo(exp.evalAt(.5),Math.exp(2.5));
+});
