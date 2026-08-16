@@ -88,3 +88,11 @@ The current code:
 - **Automated coverage:** the micpWashburnDiameter regression evaluates P = 1 psia, σ = 485 dyne/cm, θ = 130°, producing d = 180.863 µm and r = 90.432 µm.
 - **Remaining gap:** 485 dyne/cm and 130° are conventional mercury-intrusion settings, not universal physical constants; each instrument’s stated surface tension, advancing contact angle, and pressure calibration require confirmation. The pressure conversion and pore-throat **diameter** convention are covered, but a complete instrument-output benchmark remains REVIEW REQUIRED.
 
+### NMR permeability and fluid partitioning
+
+- **Status:** REVIEW REQUIRED — no production change and no regression assertion added in this increment.
+- **Equation/method inspected:** SDR is implemented as k = a φ^m T2LM^n; Timur–Coates is implemented as k = (φ/C)^p (FFI/BVI)^q. Porosity is explicitly calibrated from the total 100%-saturated T2 signal divided by bulk volume; BVI and FFI use user-editable T2 cutoffs.
+- **Sources requiring primary-record confirmation:** the code cites Kenyon et al. (1988) for SDR and Straley et al. (1997) / Chang et al. (1994) for cutoff conventions. These are empirical calibration sources rather than universal constants, and their exact bibliographic records and coefficient/unit conventions still require source-level verification.
+- **Finding:** the code correctly presents the coefficients and cutoffs as editable lithology defaults, but a fixed tri-exponential fit plus a 5% BVI applicability guard is a software choice, not a universally validated NMR interpretation rule.
+- **Remaining gap:** validate the stated default coefficients, T2 units (ms versus the unit assumed by each coefficient), 33/92/100 ms cutoffs, and the Timur–Coates parameter convention against the original publications or an authoritative vendor/manual. A regression should be added only after that evidence is verified.
+
