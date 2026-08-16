@@ -96,3 +96,20 @@ The current code:
 - **Finding:** the code correctly presents the coefficients and cutoffs as editable lithology defaults, but a fixed tri-exponential fit plus a 5% BVI applicability guard is a software choice, not a universally validated NMR interpretation rule.
 - **Remaining gap:** validate the stated default coefficients, T2 units (ms versus the unit assumed by each coefficient), 33/92/100 ms cutoffs, and the Timur–Coates parameter convention against the original publications or an authoritative vendor/manual. A regression should be added only after that evidence is verified.
 
+## Incremental validation record — NMR and pulse-decay
+
+### NMR petrophysics
+
+- **Status:** MINOR for the mathematical forms; REVIEW REQUIRED for deployed coefficient/cutoff defaults.
+- **Authoritative source verified:** Kenyon, Day, Straley and Willemsen, “A Three-Part Study of NMR Longitudinal Relaxation Properties of Water-Saturated Sandstones,” *SPE Formation Evaluation* **3**(3) (1988), 622–636, DOI: 10.2118/15643-PA. It supports the SDR power-law form k = a φ^m T2LM^n.
+- **Equation/method checked:** the implemented SDR and Timur–Coates functions retain the general empirical power-law forms k = a φ^m T2LM^n and k = (φ/C)^p (FFI/BVI)^q. A regression evaluates each with an analytic synthetic input.
+- **Empirical limitations:** coefficients, exponent conventions, T2 units, and T2 cutoffs are calibration-dependent. The implementation’s 33/92/100 ms cutoffs and lithology presets must not be read as universal. Timur–Coates depends on that cutoff through the FFI/BVI partition.
+- **Remaining gap:** source-level verification of the exact coefficient/unit packages used in every preset, particularly Timur–Coates defaults. No result was changed.
+
+### Pulse-decay permeability
+
+- **Status:** PASS for the stated simplified two-reservoir model; MINOR for scope limitations.
+- **Authoritative support:** Brace-type pulse-decay formulation as reproduced in an authoritative DOE/LBNL technical record: k = α μ β L / [A(1/Vup + 1/Vdown)], with α from ln(ΔP) versus time. The application’s factor of 1000 is the existing cm–cp–atm-to-mD unit convention.
+- **Validation:** the existing analytic exponential-decay regression recovers both α and k. The source confirms the reservoir-volume reciprocal sum and compressibility convention.
+- **Limitations:** the simplification assumes negligible sample storage, approximately uniform pressure gradient, Darcy flow, and small pulses/constant fluid properties. It is not a general transient or adsorbing-gas interpretation.
+\n
