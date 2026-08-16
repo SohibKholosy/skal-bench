@@ -125,3 +125,20 @@ The current code:
 - **Remaining gap:** fitting measured curves, Welge-tangent discretization, and Craig-rule wettability classification need separate method-specific validation. They are not asserted as universal physical laws.
 - **Citation hygiene:** obsolete Wikipedia references in this screen were removed; the existing engineering-text reference is retained.
 
+## Incremental validation record — formation factor and Arps correction
+
+### Formation factor / Archie–Winsauer
+
+- **Status:** PASS for the implemented clean-brine formation-factor fit; MINOR for applicability limits.
+- **Authoritative sources verified:** Archie, “The Electrical Resistivity Log as an Aid in Determining Some Reservoir Characteristics,” *Transactions of AIME* **146** (1942), 54–62; Winsauer, Shearin, Masson and Williams, “Resistivity of Brine-Saturated Sands in Relation to Pore Geometry,” *AAPG Bulletin* **36**(2) (1952), 253–277.
+- **Equation/method checked:** F = Ro/Rw = a φ^(−m); log10 F is regressed against log10 φ to recover free a and m. The separate Archie-constrained estimate fixes a=1.
+- **Automated coverage:** a synthetic four-plug dataset recovers a=0.8 and m=2 exactly.
+- **Applicability:** this is a clean, brine-saturated-rock relation. Conductive clay or surface conduction requires a non-Archie interpretation such as the separately reviewed Waxman–Smits module.
+
+### Arps brine-resistivity temperature correction
+
+- **Status:** PASS for the code’s declared Celsius convention.
+- **Authoritative convention verified:** Arps’ empirical temperature relation uses Rw(T2) = Rw(T1)(T1+21.5)/(T2+21.5) when temperatures are in °C; the Fahrenheit offset is 6.77. The implementation explicitly uses the Celsius form and treats the user-entered Rw temperature as the reference temperature.
+- **Automated coverage:** the same synthetic dataset corrects Rw from 20°C to 70°C before recovering the known a and m.
+- **Limitations:** Arps is empirical and assumes the same brine composition between temperatures; it does not replace a direct brine-resistivity measurement at test conditions.
+
