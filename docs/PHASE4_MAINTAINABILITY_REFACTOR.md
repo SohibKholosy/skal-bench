@@ -75,3 +75,16 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Syntax review: no duplicate-comma patterns were found in the edited production files.
 - Behavior-preservation check: 14/14 regression tests passed after extraction. No scientific calculation, calculated output, or user-visible behavior changed.
 - Current `src/calculations/index.js`: 132 lines. Remaining technical debt is limited to the unextracted electrical, NMR, stress, rock-typing, and correlation domains retained there for later independently tested increments.
+
+## Completed increment: wettability
+
+- Created `src/calculations/wettability.js`.
+- Moved the unchanged Amott/Amott–Harvey and USBM reducer as `amottUsbm`, retaining ratios, optional-area treatment, classification bands, labels, and output structure.
+- Moved contact-angle numerical interpretation: the seven wettability bands, fluid setup mapping, geometric angle calculation, supplementary-angle conversion, surface classification, and line-intersection helper.
+- The React screen retains its image state, point selection, event handlers, and canvas rendering. It now invokes `calculationFunctions.contactAngle(points, mode)` for the numerical result and obtains setup metadata through the shared entrypoint.
+- Shared dependency: `amottUsbm` imports `avg` from `math.js`; the entrypoint supplies the existing fixed-decimal formatter for unchanged Amott/USBM result text. Contact-angle logic has no math or UI import.
+- Duplicate-logic review: one production definition each of the Amott/USBM reducer, contact-angle reducer, angle helper, and line-intersection helper, all in `wettability.js`.
+- Dependency review: `index.js → wettability.js → math.js`; no module imports `index.js`, and no circular import or UI-state dependency was introduced.
+- Syntax review: no duplicate-comma patterns were found in the edited production files.
+- Behavior-preservation check: 14/14 regression tests passed after extraction. No scientific calculation, calculated output, or user-visible behavior changed.
+- Current `src/calculations/index.js`: 137 lines. Remaining technical debt is limited to unextracted electrical, NMR, stress, rock-typing, and correlation domains. The existing 14-test suite has no dedicated Amott/USBM or contact-angle regression case; adding coverage belongs to a future testing scope, not this behavior-preserving extraction.
