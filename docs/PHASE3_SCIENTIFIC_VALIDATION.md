@@ -150,3 +150,30 @@ The current code:
 - **Automated coverage:** an exact synthetic exponential series recovers c=0.001 1/psi, k0=100 mD, k at 2000 psi, and R²=1.
 - **Limitations:** do not extrapolate materially beyond the measured stress range without laboratory support. Hysteresis, stress-path dependence, pore collapse, and non-exponential response are outside this empirical model.
 
+## Incremental validation record — remaining Phase 3 priority modules
+
+### Winland r35 / FZI
+
+- **Status:** MINOR — equations and their input-unit conventions are regression-tested; port classes remain REVIEW REQUIRED.
+- **Equations verified:** Winland/Kolodzie uses base-10 logarithms: log10 r35 = 0.732 + 0.588 log10(kair[mD]) − 0.864 log10(100φ[%]), returning r35 in µm. The application correctly converts fractional φ to percent before evaluating it. Amaefule RQI = 0.0314 sqrt(k[mD]/φ) and FZI = RQI/[φ/(1−φ)], with RQI and FZI in µm.
+- **Automated coverage:** a deterministic synthetic plug asserts Winland r35, RQI, and FZI directly.
+- **Remaining gap:** the nano/micro/meso/macro/mega port thresholds are an empirical classification convention and are not independently verified here.
+
+### Contact angle
+
+- **Status:** MINOR for geometry and phase conversion; REVIEW REQUIRED for the seven-band classification.
+- **Verified convention:** reservoir wettability is interpreted through the water phase. The implementation correctly retains a water-drop angle and converts an oil-drop or captive-bubble measured angle by θwater = 180° − θdrop. The 90° water-wet/oil-wet split follows the standard phase convention.
+- **Remaining gap:** the finer 20/62/80/100/133/160° bands are empirical screening bands; use them as descriptive guidance, not an objective wettability measurement.
+
+### Penetrometer selection
+
+- **Status:** PASS for the selection criterion.
+- **Authoritative source verified:** Micromeritics *AutoPore IV 9500 Operator Manual*, 950-42828-01 Rev. A (2017), “Select a Penetrometer.” It specifies a representative sample nearly filling the bulb and estimated pore volume not less than 25% nor more than 90% of total stem volume. The documented 29 g, 8.9 g/cc, 20% nickel example agrees with the tool’s calculations.
+- **Production behavior:** unchanged.
+
+### Porosity–permeability correlation
+
+- **Status:** MINOR — transformations are mathematically correct; predictive validity is dataset-specific.
+- **Method checked:** power-law fitting regresses ln k on ln φ; exponential fitting regresses ln k on φ. Predictions are evaluated only from those fitted transforms.
+- **Remaining gap:** no universal physical coefficient is asserted; extrapolation beyond the input φ range must be independently justified. A dedicated deterministic regression remains pending.
+
