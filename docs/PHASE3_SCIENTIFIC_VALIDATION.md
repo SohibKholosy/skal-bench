@@ -53,3 +53,30 @@ The current code:
 
 - Added this validation register and the centrifuge evidence record.
 - **No scientific calculation outputs changed during Phase 3.**
+
+## Incremental validation record — centrifuge, JBN, and Waxman–Smits
+
+### Centrifuge capillary pressure
+
+- **Status:** REVIEW REQUIRED (direct inversion); PASS for the implemented pressure conversion and Hassler–Brunner short-core relation.
+- **Equation/method checked:** Pc = 0.5 Δρ ω² (r₂²−r₁²), with the Hassler–Brunner first approximation S₁ = S̄ + Pc dS̄/dPc.
+- **Authoritative sources checked:** Hassler and Brunner, *Transactions of AIME* **160** (1945), 114–123; Ayappa, Davis and Scriven, “Capillary pressure: Centrifuge method revisited,” *AIChE Journal* **35** (1989), 453–464, DOI: 10.1002/aic.690350304.
+- **Automated coverage:** the centrifugePc Hassler–Brunner regression uses a synthetic linear S̄(Pc) relation, for which the finite-difference derivative is exact.
+- **Remaining gap:** no publisher-backed numerical benchmark was found for the present discrete direct-inversion implementation, its λ=0.05 regularization, monotonicity projection, or the r₁/r₂=0.85 selection threshold. Those items remain unverified and no scientific output was changed.
+
+### JBN unsteady-state relative permeability
+
+- **Status:** MINOR — core derivative and saturation transform are regression-tested; smoothing and endpoint practice remain REVIEW REQUIRED.
+- **Equation/method checked:** the implementation computes fractional flow from dNpD/dQiD, the JBN mobility derivative from d(1/QiD)/d[1/(QiD IR)], and Sw,2 = Swi + NpD − QiD fo; nonphysical values are filtered.
+- **Authoritative source verified:** Johnson, Bossler and Naumann, “Calculation of Relative Permeability from Displacement Experiments,” *Transactions of AIME* **216** (1959), 370–372, DOI: 10.2118/1023-G (SPE publication record).
+- **Automated coverage:** the relPermJBN analytic regression uses a differentiable displacement dataset with smoothing disabled and includes a nonpositive-injection input for filtering.
+- **Remaining gap:** the five-point Savitzky–Golay setting is a numerical choice, not a JBN result; it has not yet been compared with a primary-source worked JBN dataset. Endpoint interpretation depends on displacement assumptions and remains for review.
+
+### Waxman–Smits shaly-sand formation factor
+
+- **Status:** MINOR — implemented conductivity relation and dimensional consistency tested; coefficient convention requires user-controlled units/calibration.
+- **Equation/method checked:** F* = Ro(Cw + BQv), with Cw = 1/Rw. In the regression case, Ro is Ω·m, Cw is S/m, Qv is eq/m³, and B is S·m²/eq, making BQv S/m and F* dimensionless.
+- **Authoritative source verified:** Waxman and Smits, “Electrical Conductivities in Oil-Bearing Shaly Sands,” *SPE Journal* **8**(2) (1968), 107–122, DOI: 10.2118/1863-A.
+- **Automated coverage:** the waxmanSmits regression recovers a known a*=1, m*=2 synthetic formation-factor trend.
+- **Remaining gap:** this does not validate any empirical B–salinity/temperature correlation (including Juhász conventions). The application accepts a user value for B and per-plug Qv; their units and laboratory calibration must be explicitly confirmed before interpreting results.
+
