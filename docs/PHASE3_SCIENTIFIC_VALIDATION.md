@@ -175,5 +175,5 @@ The current code:
 
 - **Status:** MINOR — transformations are mathematically correct; predictive validity is dataset-specific.
 - **Method checked:** power-law fitting regresses ln k on ln φ; exponential fitting regresses ln k on φ. Predictions are evaluated only from those fitted transforms.
-- **Remaining gap:** no universal physical coefficient is asserted; extrapolation beyond the input φ range must be independently justified. A dedicated deterministic regression remains pending.
+- **Remaining gap:** no universal physical coefficient is asserted; extrapolation beyond the input φ range must be independently justified. Automated coverage recovers known power-law and exponential coefficients and an in-range prediction from synthetic data.
 
