@@ -113,3 +113,15 @@ The current code:
 - **Validation:** the existing analytic exponential-decay regression recovers both α and k. The source confirms the reservoir-volume reciprocal sum and compressibility convention.
 - **Limitations:** the simplification assumes negligible sample storage, approximately uniform pressure gradient, Darcy flow, and small pulses/constant fluid properties. It is not a general transient or adsorbing-gas interpretation.
 \n
+
+## Incremental validation record — Brooks–Corey / Corey
+
+### Corey endpoint prediction
+
+- **Status:** MINOR — effective-saturation and endpoint prediction are regression-tested; wettability screening remains empirical.
+- **Authoritative sources verified:** Corey, “The Interrelation Between Gas and Oil Relative Permeabilities,” *Producers Monthly* **19**(1) (1954), 38–41; Brooks and Corey, *Hydraulic Properties of Porous Media*, Colorado State University Hydrology Paper No. 3 (1964).
+- **Equation/method checked:** Se = (Sw − Swi)/(1 − Swi − Sor), kro = (1 − Se)^No, and krw = [krw(Sor)/kro(Swi)] Se^Nw. The application deliberately normalizes kro to the oil endpoint at Swi and caps the normalized water endpoint at 1.
+- **Automated coverage:** a synthetic round-trip verifies Se endpoints, kro(Se=0)=1, krw(Se=0)=0, kro(Se=1)=0, krw(Se=1)=the supplied endpoint ratio, and the selected exponents.
+- **Remaining gap:** fitting measured curves, Welge-tangent discretization, and Craig-rule wettability classification need separate method-specific validation. They are not asserted as universal physical laws.
+- **Citation hygiene:** obsolete Wikipedia references in this screen were removed; the existing engineering-text reference is retained.
+
