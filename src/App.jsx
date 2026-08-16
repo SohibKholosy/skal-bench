@@ -346,69 +346,7 @@ const MODULES = [
       { key: "dP", label: "Pressure drop at this point", unit: "psi" },
     ],
     minRows: 6,
-    calc: (s, rows) => {
-      const withQi = rows.filter((r) => r.QiD > 0).sort((a, b) => a.QiD - b.QiD);
-      const pts0 = withQi.map((r) => {
-        const NpD = r.Np / s.Vp;
-        const IR = s.dP0 / r.dP;
-        return { ...r, NpD, IR, x: 1 / r.QiD, y: 1 / (r.QiD * IR) };
-      });
-      // Savitzky–Golay quadratic smoother, 5-point window (coefficients [-3,12,17,12,-3]/35).
-      // JBN takes two numerical derivatives of the production and pressure data, so raw scatter is
-      // strongly amplified — especially just after breakthrough. Smoothing the monotone series NpD
-      // and y before differentiating is the standard remedy (Savitzky & Golay, 1964, Anal. Chem.
-      // 36(8), 1627–1639); endpoints are left untouched. Set the window to 0 to disable.
-      if (s.smooth >= 5 && pts0.length >= 5) {
-        const sg = (arr) => {
-          const out = arr.slice();
-          for (let i = 2; i < arr.length - 2; i++) {
-            out[i] = (-3 * arr[i - 2] + 12 * arr[i - 1] + 17 * arr[i] + 12 * arr[i + 1] - 3 * arr[i + 2]) / 35;
-          }
-          return out;
-        };
-        const sNpD = sg(pts0.map((p) => p.NpD));
-        const sY = sg(pts0.map((p) => p.y));
-        pts0.forEach((p, i) => { p.NpD = sNpD[i]; p.y = sY[i]; });
-      }
-      const n = pts0.length;
-      const derived = pts0.map((p, i) => {
-        const prev = pts0[Math.max(0, i - 1)];
-        const next = pts0[Math.min(n - 1, i + 1)];
-        const dNpD = next.NpD - prev.NpD;
-        const dQiD = next.QiD - prev.QiD;
-        const dx = next.x - prev.x;
-        const dy = next.y - prev.y;
-        const fo = dQiD !== 0 ? dNpD / dQiD : NaN;
-        const slope = dy !== 0 ? dx / dy : NaN;
-        const kro = fo * slope;
-        const krw = (1 - fo) * slope;
-        const Sw2 = s.Swi + p.NpD - p.QiD * fo;
-        return { ...p, fo, slope, kro, krw, Sw2 };
-      });
-      const clean = derived
-        .filter((p) => Number.isFinite(p.kro) && Number.isFinite(p.krw) && Number.isFinite(p.Sw2) && p.kro >= 0 && p.krw >= 0 && p.Sw2 >= 0 && p.Sw2 <= 1)
-        .sort((a, b) => a.Sw2 - b.Sw2);
-
-      let crossoverSw = NaN;
-      for (let i = 0; i < clean.length - 1; i++) {
-        const d1 = clean[i].kro - clean[i].krw;
-        const d2 = clean[i + 1].kro - clean[i + 1].krw;
-        if (d1 === 0) { crossoverSw = clean[i].Sw2; break; }
-        if ((d1 > 0) !== (d2 > 0)) {
-          const t = d1 / (d1 - d2);
-          crossoverSw = clean[i].Sw2 + t * (clean[i + 1].Sw2 - clean[i].Sw2);
-          break;
-        }
-      }
-      const krwAtEnd = clean[clean.length - 1]?.krw;
-
-      return {
-        rows: clean,
-        headline: { label: "Water saturation at kro = krw (crossover)", value: crossoverSw, unit: "fraction" },
-        alt: { label: `${clean.length} of ${n} points physically valid; krw at Sw=${fmt(clean[clean.length - 1]?.Sw2, 3)}`, value: krwAtEnd, unit: "fraction" },
-        chart: { type: "relperm", data: clean.map((p) => ({ Sw: p.Sw2, kro: p.kro, krw: p.krw })) },
-      };
-    },
+    calc: calculationFunctions.relPermJBN,
   },
   {
     id: "relPermCorey",
@@ -636,101 +574,7 @@ const MODULES = [
       { key: "Sbar", label: "Average water saturation", unit: "fraction" },
     ],
     minRows: 4,
-    calc: (s, rows) => {
-      const PSI = 6894.757293168;
-      const base = rows.map((r) => {
-        const omega = (2 * Math.PI * r.rpm) / 60;
-        const PcPa = 0.5 * (1000 * s.drho) * omega * omega * ((s.r2 * s.r2 - s.r1 * s.r1) * 1e-4);
-        return { ...r, Pc: PcPa / PSI };
-      }).filter((x) => Number.isFinite(x.Pc) && x.Pc > 0).sort((a, b) => a.Pc - b.Pc);
-      const n = base.length;
-      // (a) Hassler-Brunner first approximation: S1 = d(S̄·Pc)/dPc = S̄ + Pc·dS̄/dPc. Exact only in
-      //     the limit r1/r2 → 1 (a short plug far from the axis), where Pc is linear across the core.
-      const hb = base.map((pt, i) => {
-        const lo = base[Math.max(0, i - 1)], hi = base[Math.min(n - 1, i + 1)];
-        const dPc = hi.Pc - lo.Pc;
-        const dSdPc = dPc !== 0 ? (hi.Sbar - lo.Sbar) / dPc : 0;
-        return Math.min(1, Math.max(0, pt.Sbar + pt.Pc * dSdPc));
-      });
-      // (b) Direct inversion of the centrifuge integral equation (Forbes 1994). Along the plug,
-      //     Pc(r) = ½Δρω²(r2²−r²), so with u = Pc/Pc1 the measured average obeys
-      //         S̄(Pc1) = ∫₀¹ S(u·Pc1)·g(u) du,   g(u) = ½(r1+r2)/√(r2² − u(r2²−r1²)),
-      //     which collapses to the Hassler-Brunner form only when g ≡ 1 (i.e. r1/r2 → 1). Writing
-      //     S(Pc) as piecewise linear on the measured pressure grid (S = 1 at Pc = 0) turns this into
-      //     a linear system. Solving it by plain back-substitution is unstable on the coarse, widely
-      //     spaced pressure grids real centrifuge runs produce (the recovered curve oscillates), so
-      //     it is solved here as a regularized least-squares problem with a second-difference penalty
-      //     and a monotonicity projection — S(Pc) must be non-increasing for drainage.
-      const g = (u) => 0.5 * (s.r1 + s.r2) / Math.sqrt(s.r2 * s.r2 - u * (s.r2 * s.r2 - s.r1 * s.r1));
-      const nodesP = [0, ...base.map((x) => x.Pc)];
-      const QUAD = 600, LAMBDA = 0.05;
-      const Cm = [];
-      for (let i = 1; i <= n; i++) {
-        const Pi = nodesP[i];
-        const c = new Array(n + 1).fill(0);
-        for (let q = 0; q < QUAD; q++) {
-          const u = (q + 0.5) / QUAD, Pc = Pi * u, w = g(u) / QUAD;
-          let k = 1;
-          while (k < i && nodesP[k] < Pc) k++;
-          const p0 = nodesP[k - 1], p1 = nodesP[k];
-          const t = p1 > p0 ? (Pc - p0) / (p1 - p0) : 0;
-          c[k - 1] += w * (1 - t);
-          c[k] += w * t;
-        }
-        Cm.push(c);
-      }
-      const A = Cm.map((c) => c.slice(1));
-      const bvec = base.map((x, i) => x.Sbar - Cm[i][0]);
-      const N2 = Array.from({ length: n }, () => new Array(n).fill(0));
-      const rhs = new Array(n).fill(0);
-      for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) { let acc = 0; for (let k = 0; k < n; k++) acc += A[k][i] * A[k][j]; N2[i][j] = acc; }
-        let acc2 = 0; for (let k = 0; k < n; k++) acc2 += A[k][i] * bvec[k]; rhs[i] = acc2;
-      }
-      for (let i = 1; i < n - 1; i++) {
-        const idx = [i - 1, i, i + 1], co = [1, -2, 1];
-        for (let a = 0; a < 3; a++) for (let b2 = 0; b2 < 3; b2++) N2[idx[a]][idx[b2]] += LAMBDA * co[a] * co[b2];
-      }
-      const Mx = N2.map((r, i) => [...r, rhs[i]]);
-      for (let i = 0; i < n; i++) {
-        let piv = i;
-        for (let k = i + 1; k < n; k++) if (Math.abs(Mx[k][i]) > Math.abs(Mx[piv][i])) piv = k;
-        const tmp = Mx[i]; Mx[i] = Mx[piv]; Mx[piv] = tmp;
-        if (Math.abs(Mx[i][i]) < 1e-14) continue;
-        for (let k = i + 1; k < n; k++) { const f = Mx[k][i] / Mx[i][i]; for (let j = i; j <= n; j++) Mx[k][j] -= f * Mx[i][j]; }
-      }
-      const Sx = new Array(n).fill(NaN);
-      for (let i = n - 1; i >= 0; i--) {
-        let acc = Mx[i][n];
-        for (let j = i + 1; j < n; j++) acc -= Mx[i][j] * Sx[j];
-        Sx[i] = Math.abs(Mx[i][i]) > 1e-14 ? acc / Mx[i][i] : (i < n - 1 ? Sx[i + 1] : 0);
-      }
-      for (let i = 1; i < n; i++) if (Sx[i] > Sx[i - 1]) Sx[i] = Sx[i - 1];
-      const Sinv = Sx.map((v) => Math.min(1, Math.max(0, v)));
-      // Which estimate to trust: Hassler-Brunner is exact as r1/r2 → 1 and degrades as the plug gets
-      // long relative to its distance from the axis. Round-trip tests on synthetic Brooks-Corey
-      // curves show HB within ~0.03 saturation units at r1/r2 ≈ 0.9 but in error by ~0.15–0.17 at
-      // r1/r2 ≤ 0.625, where the direct inversion is an order of magnitude better. Below the
-      // threshold the inversion leads; above it HB leads and the inversion's smoothing is the larger
-      // source of error.
-      const ratio = s.r2 > 0 ? s.r1 / s.r2 : NaN;
-      const useHB = !(ratio < 0.85);
-      const corr = base.map((pt, i) => ({ ...pt, S1hb: hb[i], S1inv: Sinv[i], S1: useHB ? hb[i] : Sinv[i] }));
-      const Swi = corr.length ? Math.min(...corr.map((x) => x.S1)) : NaN;
-      const other = corr.length ? Math.min(...corr.map((x) => (useHB ? x.S1inv : x.S1hb))) : NaN;
-      const PcMax = corr.length ? Math.max(...corr.map((x) => x.Pc)) : NaN;
-      const method = useHB ? "Hassler-Brunner" : "direct (Forbes) inversion";
-      const otherName = useHB ? "direct inversion" : "Hassler-Brunner";
-      const note = useHB
-        ? `r1/r2 = ${fmt(ratio, 2)} ≥ 0.85, so the Hassler-Brunner approximation is reliable here`
-        : `r1/r2 = ${fmt(ratio, 2)} < 0.85 — the plug is long relative to its radius, where Hassler-Brunner is known to break down, so the direct inversion is used`;
-      return {
-        rows: corr,
-        headline: { label: `Irreducible saturation (inlet face, ${method})`, value: Swi, unit: "fraction" },
-        alt: { label: `${note} · ${otherName} gives ${fmt(other, 3)} · max Pc = ${fmt(PcMax, 2)} psi · ${corr.length} speed steps`, value: PcMax, unit: "psi" },
-        chart: { type: "xyfit", points: corr.map((x) => ({ x: x.S1, y: x.Pc })).sort((a, b) => a.x - b.x), connect: true, xLabel: "Inlet-face water saturation (fraction)", yLabel: "Capillary pressure (psi)" },
-      };
-    },
+    calc: calculationFunctions.centrifugePc,
   },
   {
     id: "wettability",
@@ -806,32 +650,7 @@ const MODULES = [
       { key: "Ro", label: "Resistivity at 100% brine (Ro)", unit: "Ω·m" },
     ],
     minRows: 4,
-    calc: (s, rows) => {
-      // Arps (1953): Rw2 = Rw1·(T1 + 21.5)/(T2 + 21.5) with T in °C (the °F form uses 6.77).
-      // Brine resistivity is strongly temperature-dependent, so Rw must be stated at the same
-      // temperature as Ro before the formation factor is formed.
-      const RwT = (Number.isFinite(s.RwTemp) && Number.isFinite(s.testTemp))
-        ? s.Rw * (s.RwTemp + 21.5) / (s.testTemp + 21.5) : s.Rw;
-      const pts = rows.map((r) => {
-        const F = RwT > 0 ? r.Ro / RwT : NaN;
-        return { ...r, F, lx: Math.log10(r.phi), ly: Math.log10(F) };
-      }).filter((x) => Number.isFinite(x.lx) && Number.isFinite(x.ly));
-      const fit = linreg(pts.map((x) => x.lx), pts.map((x) => x.ly));
-      const m = -fit.slope;
-      const a = Math.pow(10, fit.intercept);
-      // Archie's original law fixes a = 1, i.e. the line is forced through (0,0) in log-log space.
-      let sxy = 0, sxx = 0;
-      for (const x of pts) { sxy += x.lx * x.ly; sxx += x.lx * x.lx; }
-      const mArchie = sxx > 0 ? -(sxy / sxx) : NaN;
-      const corrNote = Math.abs(RwT - s.Rw) > 1e-9 ? ` · Rw corrected ${fmt(s.Rw, 4)}→${fmt(RwT, 4)} Ω·m (Arps)` : "";
-      return {
-        rows: pts,
-        headline: { label: "Cementation exponent m (free a)", value: m, unit: "—" },
-        alt: { label: `a = ${fmt(a, 3)} · Archie-constrained (a=1) m = ${fmt(mArchie, 3)} · Humble a≈0.62, m≈2.15 · ${pts.length} plugs${corrNote}`, value: a, unit: "—" },
-        r2: fit.r2,
-        chart: { type: "xyfit", points: pts.map((x) => ({ x: x.lx, y: x.ly })), fit, xLabel: "log₁₀ porosity", yLabel: "log₁₀ formation factor" },
-      };
-    },
+    calc:calculationFunctions.formationFactorFit,
   },
   {
     id: "resistivityIndexFit",
@@ -956,26 +775,7 @@ const MODULES = [
       { key: "Qv", label: "Cation exchange capacity per pore volume (Qv)", unit: "meq/cm³" },
     ],
     minRows: 4,
-    calc: (s, rows) => {
-      const Cw = s.Rw > 0 ? 1 / s.Rw : NaN;
-      const pts = rows.map((r) => {
-        const Fstar = r.Ro * (Cw + s.B * r.Qv);  // intrinsic, clay-corrected
-        const Farchie = s.Rw > 0 ? r.Ro / s.Rw : NaN; // apparent, uncorrected
-        return { ...r, Fstar, Farchie, lx: Math.log10(r.phi), ly: Math.log10(Fstar), lyA: Math.log10(Farchie) };
-      }).filter((x) => Number.isFinite(x.lx) && Number.isFinite(x.ly));
-      const fit = linreg(pts.map((x) => x.lx), pts.map((x) => x.ly));
-      const mStar = -fit.slope;
-      const aStar = Math.pow(10, fit.intercept);
-      const fitA = linreg(pts.map((x) => x.lx), pts.map((x) => x.lyA));
-      const mApp = -fitA.slope;
-      return {
-        rows: pts,
-        headline: { label: "Clay-corrected cementation exponent m*", value: mStar, unit: "—" },
-        alt: { label: `a* = ${fmt(aStar, 3)} · uncorrected (clean-Archie) m would be ${fmt(mApp, 3)}, biased low by clay conductivity · ${pts.length} plugs`, value: aStar, unit: "—" },
-        r2: fit.r2,
-        chart: { type: "xyfit", points: pts.map((x) => ({ x: x.lx, y: x.ly })), fit, xLabel: "log₁₀ porosity", yLabel: "log₁₀ F* (clay-corrected)" },
-      };
-    },
+    calc: calculationFunctions.waxmanSmits,
   },
   {
     id: "stressDependence",
@@ -1001,24 +801,7 @@ const MODULES = [
       { key: "k", label: "Permeability at this stress", unit: "mD" },
     ],
     minRows: 3,
-    calc: (s, rows) => {
-      const pts = rows.map((r) => ({ ...r, lk: Math.log(r.k) }))
-        .filter((x) => Number.isFinite(x.lk) && Number.isFinite(x.sigma))
-        .sort((a, b) => a.sigma - b.sigma);
-      const fit = linreg(pts.map((x) => x.sigma), pts.map((x) => x.lk));
-      const c = -fit.slope;                 // 1/psi
-      const k0 = Math.exp(fit.intercept);   // extrapolated to zero net stress
-      const kRes = k0 * Math.exp(-c * s.sigmaRes);
-      const kAmb = pts.length ? pts[0].k : NaN;
-      const retained = Number.isFinite(kAmb) && kAmb > 0 ? (kRes / kAmb) * 100 : NaN;
-      return {
-        rows: pts,
-        headline: { label: `Permeability at ${fmt(s.sigmaRes, 0)} psi net stress`, value: kRes, unit: "mD" },
-        alt: { label: `Stress sensitivity c = ${(c * 1000).toFixed(4)} per 1000 psi · k₀ (zero stress) = ${fmt(k0, 2)} mD · retains ${fmt(retained, 1)}% of the lowest-stress value · ${pts.length} steps`, value: c, unit: "1/psi" },
-        r2: fit.r2,
-        chart: { type: "xyfit", points: pts.map((x) => ({ x: x.sigma, y: x.lk })), fit, xLabel: "Net confining stress (psi)", yLabel: "ln k (mD)" },
-      };
-    },
+    calc:calculationFunctions.stressDependence,
   },
   {
     id: "rockTyping",
@@ -1041,32 +824,7 @@ const MODULES = [
       { key: "k", label: "Permeability", unit: "mD" },
     ],
     minRows: 3,
-    calc: (s, rows) => {
-      const cls = (r) => (r > 10 ? "megaport" : r > 2 ? "macroport" : r > 0.5 ? "mesoport" : r > 0.1 ? "microport" : "nanoport");
-      const pts = rows.map((r, i) => {
-        const phiPct = r.phi * 100;
-        const r35W = Math.pow(10, 0.732 + 0.588 * Math.log10(r.k) - 0.864 * Math.log10(phiPct));
-        const r35P = Math.pow(10, 0.255 + 0.565 * Math.log10(r.k) - 0.523 * Math.log10(phiPct));
-        const RQI = 0.0314 * Math.sqrt(r.k / r.phi);
-        const phiz = r.phi / (1 - r.phi);
-        const FZI = phiz > 0 ? RQI / phiz : NaN;
-        return { ...r, plug: i + 1, r35W, r35P, RQI, phiz, FZI, port: cls(r35W) };
-      }).filter((x) => Number.isFinite(x.r35W) && Number.isFinite(x.FZI));
-      const meanR35 = avg(pts.map((x) => x.r35W));
-      const meanFZI = avg(pts.map((x) => x.FZI));
-      // A single hydraulic flow unit plots as a straight line of unit slope on log RQI vs log phiz.
-      const fit = linreg(pts.map((x) => Math.log10(x.phiz)), pts.map((x) => Math.log10(x.RQI)));
-      const counts = {};
-      pts.forEach((x) => { counts[x.port] = (counts[x.port] || 0) + 1; });
-      const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-      return {
-        rows: pts,
-        headline: { label: "Mean Winland r35 pore-throat radius", value: meanR35, unit: "µm" },
-        alt: { label: `Mean FZI = ${fmt(meanFZI, 3)} µm · dominant port class: ${dominant ? dominant[0] : "—"} (${dominant ? dominant[1] : 0}/${pts.length}) · RQI–φz slope ${fmt(fit.slope, 2)} (≈1 means a single flow unit; scatter means several)`, value: meanFZI, unit: "µm" },
-        r2: fit.r2,
-        chart: { type: "xyfit", points: pts.map((x) => ({ x: Math.log10(x.phiz), y: Math.log10(x.RQI) })), fit, xLabel: "log₁₀ φz  (normalised porosity)", yLabel: "log₁₀ RQI (µm)" },
-      };
-    },
+    calc:calculationFunctions.rockTyping,
   },
   {
     id: "uncertaintyBudget",
@@ -3329,18 +3087,8 @@ function parseCorrWorkbook(arrayBuffer) {
   return rows.filter((r) => Number.isFinite(r.phi) && r.phi > 0 && Number.isFinite(r.k) && r.k > 0);
 }
 
-function fitPowerLaw(pts) {
-  const xs = pts.map((p) => Math.log(p.phi));
-  const ys = pts.map((p) => Math.log(p.k));
-  const { slope, intercept, r2 } = linreg(xs, ys);
-  return { c1: slope, c0: Math.exp(intercept), r2, evalAt: (phi) => Math.exp(intercept) * Math.pow(phi, slope), eq: `k = ${fmt(Math.exp(intercept), 3)} · φ^${fmt(slope, 3)}` };
-}
-function fitExponential(pts) {
-  const xs = pts.map((p) => p.phi);
-  const ys = pts.map((p) => Math.log(p.k));
-  const { slope, intercept, r2 } = linreg(xs, ys);
-  return { a: intercept, b: slope, r2, evalAt: (phi) => Math.exp(intercept + slope * phi), eq: `k = exp(${fmt(intercept, 3)} + ${fmt(slope, 3)}·φ)` };
-}
+const fitPowerLaw = calculationFunctions.fitPowerLaw;
+const fitExponential = calculationFunctions.fitExponential;
 function sampleCurve(phiMin, phiMax, evalAt, n = 30) {
   const pts = [];
   for (let i = 0; i < n; i++) {
@@ -3681,7 +3429,7 @@ function RelPermHub({ onOpen, onBack }) {
 
 /* ============================== COREY ENDPOINT PREDICTION + WETTABILITY ============================== */
 /* Relative permeability is defined in the literature as the ratio of effective to absolute permeability and
- * must fall between 0 and 1 (Amyx, Bass & Whiting, 1960; Wikipedia "Relative permeability"; AAPG Wiki). SCAL
+ * must fall between 0 and 1 (Amyx, Bass & Whiting, 1960). SCAL
  * results are conventionally reported relative to a single reference — the oil permeability at Swi — so both
  * kro and krw here are normalized against Kro@Swi (Ahmed, T., Reservoir Engineering Handbook, 4th ed., 2010):
  * kro is self-normalized (=1.0 at Swi by definition), and krw@Sor is expressed as a fraction of Kro@Swi. If a
@@ -3692,76 +3440,7 @@ function RelPermHub({ onOpen, onBack }) {
  * Swi alone) is flagged in the literature as the least reliable of the three (Mirzaei-Paiaman, 2021, Fuel 288,
  * "Revisiting Craig's rules of thumb"), so it carries half the weight of rules 1 and 2 in the synthesis below.
  * This synthesis is our own combination of the three published rules, not a separately published index. */
-function computeCoreyPredict(v) {
-  const { Swi, Sor, KroSwi, KrwSor, lambdaKro, lambdaKrw, muo, muw } = v;
-  const krwMaxRatioRaw = KrwSor / KroSwi;
-  const krwClipped = krwMaxRatioRaw > 1;
-  const krwMaxRatio = Math.min(1, krwMaxRatioRaw);
-  const span = 1 - Swi - Sor;
-  const n = 50;
-  const table = [];
-  for (let i = 0; i < n; i++) {
-    const Se = i / (n - 1);
-    const Sw = Swi + Se * span;
-    const kro = Math.pow(1 - Se, lambdaKro);
-    const krw = krwMaxRatio * Math.pow(Se, lambdaKrw);
-    const lw = krw / muw, lo = kro / muo;
-    const fw = lw + lo > 0 ? lw / (lw + lo) : 0;
-    table.push({ Sw, Se, kro, krw, fw });
-  }
-
-  let crossoverSw = NaN, crossoverK = NaN;
-  for (let i = 0; i < table.length - 1; i++) {
-    const d1 = table[i].kro - table[i].krw, d2 = table[i + 1].kro - table[i + 1].krw;
-    if (d1 === 0) { crossoverSw = table[i].Sw; crossoverK = table[i].kro; break; }
-    if ((d1 > 0) !== (d2 > 0)) {
-      const t = d1 / (d1 - d2);
-      crossoverSw = table[i].Sw + t * (table[i + 1].Sw - table[i].Sw);
-      crossoverK = table[i].kro + t * (table[i + 1].kro - table[i].kro);
-      break;
-    }
-  }
-
-  let best = { slope: -Infinity, idx: -1 };
-  table.forEach((p, i) => { if (p.Sw > Swi) { const m = p.fw / (p.Sw - Swi); if (m > best.slope) best = { slope: m, idx: i }; } });
-  const front = table[best.idx] || { Sw: Swi, fw: 0 };
-  const swMax = 1 - Sor;
-  const swAtFw1 = best.slope > 0 ? Swi + 1 / best.slope : swMax;
-  const tangentEndSw = Math.min(swMax, swAtFw1);
-  const tangent = [{ Sw: Swi, fw: 0 }, { Sw: tangentEndSw, fw: best.slope * (tangentEndSw - Swi) }];
-  const swBreakthrough = Math.min(swMax, swAtFw1);
-
-  // Craig's rule 1: krw at Sor, normalized to kro at Swi (Craig's own reference convention)
-  const krwSorNorm = krwMaxRatioRaw;
-  let score = 0;
-  if (krwSorNorm < 0.3) score += krwSorNorm < 0.15 ? 2 : 1;
-  else if (krwSorNorm > 0.5) score -= krwSorNorm > 0.75 ? 2 : 1;
-  // Craig's rule 2: crossover saturation vs 50%
-  if (Number.isFinite(crossoverSw)) {
-    if (crossoverSw > 0.5) score += crossoverSw > 0.65 ? 2 : 1;
-    else score -= crossoverSw < 0.35 ? 2 : 1;
-  }
-  // Craig's rule 3: connate water saturation (half weight — flagged less reliable in the literature)
-  if (Swi > 0.20) score += 0.5;
-  else if (Swi < 0.15) score -= 0.5;
-
-  let label, color;
-  if (score >= 4) { label = "Strongly water-wet"; color = C.teal; }
-  else if (score >= 2) { label = "Moderately water-wet"; color = C.teal; }
-  else if (score >= 0.5) { label = "Weakly water-wet"; color = C.teal; }
-  else if (score > -0.5) { label = "Neutral / mixed-wet signals"; color = C.amber; }
-  else if (score > -2) { label = "Weakly oil-wet"; color = C.clay; }
-  else if (score > -4) { label = "Moderately oil-wet"; color = C.clay; }
-  else { label = "Strongly oil-wet"; color = C.clay; }
-
-  return {
-    table, crossoverSw, crossoverK, front, tangent, swBreakthrough,
-    krwSorNorm, score, label, color, krwClipped,
-    rule1: krwSorNorm < 0.3 ? "water-wet" : krwSorNorm > 0.5 ? "oil-wet" : "ambiguous",
-    rule2: Number.isFinite(crossoverSw) ? (crossoverSw > 0.5 ? "water-wet" : "oil-wet") : "n/a",
-    rule3: Swi > 0.20 ? "water-wet" : Swi < 0.15 ? "oil-wet" : "ambiguous",
-  };
-}
+function computeCoreyPredict(v) { return calculationFunctions.coreyPredict(v, C); }
 
 function exportCoreyTable(table) {
   const headers = ["Sw", "Se", "Kro", "Krw", "fw"];
@@ -3864,7 +3543,7 @@ function CoreyPredictPanel({ mod }) {
           {result.krwClipped && (
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: C.claySoft, border: `1px solid ${C.clay}66`, borderRadius: 8, padding: "10px 12px", fontSize: 12.5, color: C.text, ...fBody }}>
               <AlertCircle size={15} color={C.clay} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span>Krw@Sor is greater than Kro@Swi in your inputs. Relative permeability cannot exceed 1.0 by definition (Wikipedia, "Relative permeability"; Amyx, Bass &amp; Whiting, 1960), so Krw has been capped at 1.0 — double-check these two endpoint measurements.</span>
+              <span>Krw@Sor is greater than Kro@Swi in your inputs. Relative permeability cannot exceed 1.0 by definition (Amyx, Bass &amp; Whiting, <em>Petroleum Reservoir Engineering</em> (1960)), so Krw has been capped at 1.0 — double-check these two endpoint measurements.</span>
             </div>
           )}
 
@@ -3950,7 +3629,7 @@ function CoreyScreen({ mod, onBack }) {
         Predict mode) a wettability read based on Craig's (1971) rules of thumb.
       </p>
       <p style={{ marginTop: 8, fontSize: 11.5, lineHeight: 1.6, color: C.textFaint, maxWidth: 720, fontStyle: "italic", ...fBody }}>
-        Relative permeability is bounded between 0 and 1 by definition (Wikipedia, "Relative permeability"; Amyx, Bass &amp; Whiting, 1960)
+        Relative permeability is bounded between 0 and 1 by definition (Amyx, Bass &amp; Whiting, <em>Petroleum Reservoir Engineering</em> (1960))
         and, per standard SCAL reporting convention, both curves here are normalized to the oil permeability at Swi
         (Ahmed, T., Reservoir Engineering Handbook, 4th ed., 2010).
       </p>
@@ -4640,7 +4319,7 @@ function micpExtract(struct) {
 
 /* Washburn (1921): d = -4 σ cosθ / P. σ dyne/cm, θ degrees, P psia, d in µm. */
 function washburnD(P, sigma, theta) {
-  return ((-4 * sigma * MICP_DYNE_TO_NM * Math.cos(theta * MICP_RAD)) / (P * MICP_PSI_TO_PA)) * 1e6;
+  return calculationFunctions.micpWashburnDiameter(P, sigma, theta);
 }
 /* Pc(2) = Pc(1) · (σcosθ)₂ / (σcosθ)₁ */
 function pcConvert(Pc, s1, t1, s2, t2, useAngle) {
@@ -7663,8 +7342,8 @@ const NMR_LITHOLOGY_DEFAULTS = {
   shalySandstone: { name: "Shaly Sandstone", t2CutoffBVI: 33, cbwCutoff: 3, sdr: { a: 4, m: 4, n: 2 }, coates: { C: 0.1, p: 4, q: 2 },
     refs: ["Straley et al. (1997), The Log Analyst", "Clay-bound water is typically larger here — verify the CBW cutoff against core data if possible"] },
 };
-const kSDR = (phi, t2lm, c) => c.a * Math.pow(phi, c.m) * Math.pow(t2lm, c.n);
-const kCoates = (phi, ffi, bvi, c) => Math.pow(phi / c.C, c.p) * Math.pow(ffi / bvi, c.q);
+const kSDR = calculationFunctions.nmrSDR;
+const kCoates = calculationFunctions.nmrTimurCoates;
 /* Coates depends on the FFI/BVI ratio, which is numerically unstable when almost no signal
    falls below the BVI cutoff: a clean, near-irreducible rock has ~zero bound water, so a tiny
    BVI (often just regularization leakage into the low-T2 bins) sends FFI/BVI — and therefore k —
