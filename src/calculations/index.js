@@ -1,3 +1,4 @@
+import { avg, linreg } from "./math.js";
 import { gasSteady, gasSingle, liquidCoreflood, pulseDecay } from "./permeability.js";
 
 export const calculationFunctions = { gasSteady, gasSingle, pulseDecay, liquidCoreflood };
