@@ -3087,18 +3087,8 @@ function parseCorrWorkbook(arrayBuffer) {
   return rows.filter((r) => Number.isFinite(r.phi) && r.phi > 0 && Number.isFinite(r.k) && r.k > 0);
 }
 
-function fitPowerLaw(pts) {
-  const xs = pts.map((p) => Math.log(p.phi));
-  const ys = pts.map((p) => Math.log(p.k));
-  const { slope, intercept, r2 } = linreg(xs, ys);
-  return { c1: slope, c0: Math.exp(intercept), r2, evalAt: (phi) => Math.exp(intercept) * Math.pow(phi, slope), eq: `k = ${fmt(Math.exp(intercept), 3)} · φ^${fmt(slope, 3)}` };
-}
-function fitExponential(pts) {
-  const xs = pts.map((p) => p.phi);
-  const ys = pts.map((p) => Math.log(p.k));
-  const { slope, intercept, r2 } = linreg(xs, ys);
-  return { a: intercept, b: slope, r2, evalAt: (phi) => Math.exp(intercept + slope * phi), eq: `k = exp(${fmt(intercept, 3)} + ${fmt(slope, 3)}·φ)` };
-}
+const fitPowerLaw = calculationFunctions.fitPowerLaw;
+const fitExponential = calculationFunctions.fitExponential;
 function sampleCurve(phiMin, phiMax, evalAt, n = 30) {
   const pts = [];
   for (let i = 0; i < n; i++) {
