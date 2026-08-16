@@ -150,3 +150,13 @@ test("coreyPredict recovers endpoint-normalized Corey curves on a synthetic roun
   const middle = result.table[25];
   closeTo(middle.kro, (1 - middle.Se) ** 2); closeTo(middle.krw, 0.4 * middle.Se ** 3);
 });
+
+
+test("formationFactorFit recovers known Winsauer a and m and the Arps Celsius correction", () => {
+  const a = 0.8, m = 2, RwAt20 = 0.1;
+  const RwAt70 = RwAt20 * (20 + 21.5) / (70 + 21.5);
+  const rows = [0.2, 0.25, 0.3, 0.35].map((phi) => ({ phi, Ro: RwAt70 * a * phi ** -m }));
+  const result = calculationFunctions.formationFactorFit({ Rw: RwAt20, RwTemp: 20, testTemp: 70 }, rows);
+  closeTo(result.headline.value, 2); closeTo(result.alt.value, 0.8); closeTo(result.r2, 1);
+  closeTo(result.rows[0].F, a * rows[0].phi ** -m);
+});
