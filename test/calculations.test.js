@@ -110,6 +110,7 @@ test("waxmanSmits preserves the conductivity-consistent Waxman–Smits formation
   const B = 0.2;
   const rows = [0.2, 0.25, 0.3].map((phi) => ({
     phi,
+    Qv,
     Ro: phi ** -2 / (Cw + B * Qv),
   }));
   const result = calculationFunctions.waxmanSmits({ Rw: 0.1, B, Qv }, rows);
