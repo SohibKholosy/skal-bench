@@ -284,36 +284,7 @@ const MODULES = [
       { key: "dP", label: "Stabilized pressure drop ΔP", unit: "atm" },
     ],
     minRows: 5,
-    calc: (s, rows) => {
-      const A = areaFromDiameter(s.D);
-      const pts = rows
-        .map((r) => {
-          const ko = 1000 * (r.Qo * s.muo * s.L) / (A * r.dP);
-          const kw = 1000 * (r.Qw * s.muw * s.L) / (A * r.dP);
-          return { ...r, ko, kw, kro: ko / s.kabs, krw: kw / s.kabs };
-        })
-        .sort((a, b) => a.Sw - b.Sw);
-
-      let crossoverSw = NaN;
-      for (let i = 0; i < pts.length - 1; i++) {
-        const d1 = pts[i].kro - pts[i].krw;
-        const d2 = pts[i + 1].kro - pts[i + 1].krw;
-        if (d1 === 0) { crossoverSw = pts[i].Sw; break; }
-        if ((d1 > 0) !== (d2 > 0)) {
-          const t = d1 / (d1 - d2);
-          crossoverSw = pts[i].Sw + t * (pts[i + 1].Sw - pts[i].Sw);
-          break;
-        }
-      }
-      const krwAtSor = pts[pts.length - 1]?.krw;
-
-      return {
-        rows: pts,
-        headline: { label: "Water saturation at kro = krw (crossover)", value: crossoverSw, unit: "fraction" },
-        alt: { label: `krw at Sw=${fmt(pts[pts.length - 1]?.Sw, 3)} (highest Sw tested, ≈ residual-oil endpoint)`, value: krwAtSor, unit: "fraction" },
-        chart: { type: "relperm", data: pts },
-      };
-    },
+    calc: calculationFunctions.relPermSteady,
   },
   {
     id: "relPermJBN",
