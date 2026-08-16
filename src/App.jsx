@@ -7488,8 +7488,8 @@ const NMR_LITHOLOGY_DEFAULTS = {
   shalySandstone: { name: "Shaly Sandstone", t2CutoffBVI: 33, cbwCutoff: 3, sdr: { a: 4, m: 4, n: 2 }, coates: { C: 0.1, p: 4, q: 2 },
     refs: ["Straley et al. (1997), The Log Analyst", "Clay-bound water is typically larger here — verify the CBW cutoff against core data if possible"] },
 };
-const kSDR = (phi, t2lm, c) => c.a * Math.pow(phi, c.m) * Math.pow(t2lm, c.n);
-const kCoates = (phi, ffi, bvi, c) => Math.pow(phi / c.C, c.p) * Math.pow(ffi / bvi, c.q);
+const kSDR = calculationFunctions.nmrSDR;
+const kCoates = calculationFunctions.nmrTimurCoates;
 /* Coates depends on the FFI/BVI ratio, which is numerically unstable when almost no signal
    falls below the BVI cutoff: a clean, near-irreducible rock has ~zero bound water, so a tiny
    BVI (often just regularization leakage into the low-T2 bins) sends FFI/BVI — and therefore k —
