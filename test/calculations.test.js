@@ -125,6 +125,6 @@ test("micp Washburn inversion gives the documented 1 psia pore-throat diameter",
   // Washburn (1921), Physical Review 17(3), 273–283, DOI: 10.1103/PhysRev.17.273.
   // The equation returns diameter; the MICP result layer reports radius as D / 2.
   const diameterUm = calculationFunctions.micpWashburnDiameter(1, 485, 130);
-  closeTo(diameterUm, 180.854, 0.001);
-  closeTo(diameterUm / 2, 90.427, 0.001);
+  closeTo(diameterUm, 180.863, 0.001);
+  closeTo(diameterUm / 2, 90.432, 0.001);
 });
