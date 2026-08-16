@@ -160,3 +160,10 @@ test("formationFactorFit recovers known Winsauer a and m and the Arps Celsius co
   closeTo(result.headline.value, 2); closeTo(result.alt.value, 0.8); closeTo(result.r2, 1);
   closeTo(result.rows[0].F, a * rows[0].phi ** -m);
 });
+
+
+test("stressDependence recovers an empirical exponential stress trend", () => {
+  const k0=100, c=0.001; const rows=[100,500,1000].map((sigma)=>({sigma,k:k0*Math.exp(-c*sigma)}));
+  const result=calculationFunctions.stressDependence({sigmaRes:2000},rows);
+  closeTo(result.headline.value,k0*Math.exp(-2)); closeTo(result.alt.value,c); closeTo(result.r2,1);
+});
