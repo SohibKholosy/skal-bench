@@ -3517,76 +3517,7 @@ function RelPermHub({ onOpen, onBack }) {
  * Swi alone) is flagged in the literature as the least reliable of the three (Mirzaei-Paiaman, 2021, Fuel 288,
  * "Revisiting Craig's rules of thumb"), so it carries half the weight of rules 1 and 2 in the synthesis below.
  * This synthesis is our own combination of the three published rules, not a separately published index. */
-function computeCoreyPredict(v) {
-  const { Swi, Sor, KroSwi, KrwSor, lambdaKro, lambdaKrw, muo, muw } = v;
-  const krwMaxRatioRaw = KrwSor / KroSwi;
-  const krwClipped = krwMaxRatioRaw > 1;
-  const krwMaxRatio = Math.min(1, krwMaxRatioRaw);
-  const span = 1 - Swi - Sor;
-  const n = 50;
-  const table = [];
-  for (let i = 0; i < n; i++) {
-    const Se = i / (n - 1);
-    const Sw = Swi + Se * span;
-    const kro = Math.pow(1 - Se, lambdaKro);
-    const krw = krwMaxRatio * Math.pow(Se, lambdaKrw);
-    const lw = krw / muw, lo = kro / muo;
-    const fw = lw + lo > 0 ? lw / (lw + lo) : 0;
-    table.push({ Sw, Se, kro, krw, fw });
-  }
-
-  let crossoverSw = NaN, crossoverK = NaN;
-  for (let i = 0; i < table.length - 1; i++) {
-    const d1 = table[i].kro - table[i].krw, d2 = table[i + 1].kro - table[i + 1].krw;
-    if (d1 === 0) { crossoverSw = table[i].Sw; crossoverK = table[i].kro; break; }
-    if ((d1 > 0) !== (d2 > 0)) {
-      const t = d1 / (d1 - d2);
-      crossoverSw = table[i].Sw + t * (table[i + 1].Sw - table[i].Sw);
-      crossoverK = table[i].kro + t * (table[i + 1].kro - table[i].kro);
-      break;
-    }
-  }
-
-  let best = { slope: -Infinity, idx: -1 };
-  table.forEach((p, i) => { if (p.Sw > Swi) { const m = p.fw / (p.Sw - Swi); if (m > best.slope) best = { slope: m, idx: i }; } });
-  const front = table[best.idx] || { Sw: Swi, fw: 0 };
-  const swMax = 1 - Sor;
-  const swAtFw1 = best.slope > 0 ? Swi + 1 / best.slope : swMax;
-  const tangentEndSw = Math.min(swMax, swAtFw1);
-  const tangent = [{ Sw: Swi, fw: 0 }, { Sw: tangentEndSw, fw: best.slope * (tangentEndSw - Swi) }];
-  const swBreakthrough = Math.min(swMax, swAtFw1);
-
-  // Craig's rule 1: krw at Sor, normalized to kro at Swi (Craig's own reference convention)
-  const krwSorNorm = krwMaxRatioRaw;
-  let score = 0;
-  if (krwSorNorm < 0.3) score += krwSorNorm < 0.15 ? 2 : 1;
-  else if (krwSorNorm > 0.5) score -= krwSorNorm > 0.75 ? 2 : 1;
-  // Craig's rule 2: crossover saturation vs 50%
-  if (Number.isFinite(crossoverSw)) {
-    if (crossoverSw > 0.5) score += crossoverSw > 0.65 ? 2 : 1;
-    else score -= crossoverSw < 0.35 ? 2 : 1;
-  }
-  // Craig's rule 3: connate water saturation (half weight — flagged less reliable in the literature)
-  if (Swi > 0.20) score += 0.5;
-  else if (Swi < 0.15) score -= 0.5;
-
-  let label, color;
-  if (score >= 4) { label = "Strongly water-wet"; color = C.teal; }
-  else if (score >= 2) { label = "Moderately water-wet"; color = C.teal; }
-  else if (score >= 0.5) { label = "Weakly water-wet"; color = C.teal; }
-  else if (score > -0.5) { label = "Neutral / mixed-wet signals"; color = C.amber; }
-  else if (score > -2) { label = "Weakly oil-wet"; color = C.clay; }
-  else if (score > -4) { label = "Moderately oil-wet"; color = C.clay; }
-  else { label = "Strongly oil-wet"; color = C.clay; }
-
-  return {
-    table, crossoverSw, crossoverK, front, tangent, swBreakthrough,
-    krwSorNorm, score, label, color, krwClipped,
-    rule1: krwSorNorm < 0.3 ? "water-wet" : krwSorNorm > 0.5 ? "oil-wet" : "ambiguous",
-    rule2: Number.isFinite(crossoverSw) ? (crossoverSw > 0.5 ? "water-wet" : "oil-wet") : "n/a",
-    rule3: Swi > 0.20 ? "water-wet" : Swi < 0.15 ? "oil-wet" : "ambiguous",
-  };
-}
+function computeCoreyPredict(v) { return calculationFunctions.coreyPredict(v, C); }
 
 function exportCoreyTable(table) {
   const headers = ["Sw", "Se", "Kro", "Krw", "fw"];
@@ -3689,7 +3620,7 @@ function CoreyPredictPanel({ mod }) {
           {result.krwClipped && (
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: C.claySoft, border: `1px solid ${C.clay}66`, borderRadius: 8, padding: "10px 12px", fontSize: 12.5, color: C.text, ...fBody }}>
               <AlertCircle size={15} color={C.clay} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span>Krw@Sor is greater than Kro@Swi in your inputs. Relative permeability cannot exceed 1.0 by definition (Wikipedia, "Relative permeability"; Amyx, Bass &amp; Whiting, 1960), so Krw has been capped at 1.0 — double-check these two endpoint measurements.</span>
+              <span>Krw@Sor is greater than Kro@Swi in your inputs. Relative permeability cannot exceed 1.0 by definition (Amyx, Bass &amp; Whiting, <em>Petroleum Reservoir Engineering</em> (1960)), so Krw has been capped at 1.0 — double-check these two endpoint measurements.</span>
             </div>
           )}
 
@@ -3775,7 +3706,7 @@ function CoreyScreen({ mod, onBack }) {
         Predict mode) a wettability read based on Craig's (1971) rules of thumb.
       </p>
       <p style={{ marginTop: 8, fontSize: 11.5, lineHeight: 1.6, color: C.textFaint, maxWidth: 720, fontStyle: "italic", ...fBody }}>
-        Relative permeability is bounded between 0 and 1 by definition (Wikipedia, "Relative permeability"; Amyx, Bass &amp; Whiting, 1960)
+        Relative permeability is bounded between 0 and 1 by definition (Amyx, Bass &amp; Whiting, <em>Petroleum Reservoir Engineering</em> (1960))
         and, per standard SCAL reporting convention, both curves here are normalized to the oil permeability at Swi
         (Ahmed, T., Reservoir Engineering Handbook, 4th ed., 2010).
       </p>
