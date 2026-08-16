@@ -80,3 +80,11 @@ The current code:
 - **Automated coverage:** the waxmanSmits regression recovers a known a*=1, m*=2 synthetic formation-factor trend.
 - **Remaining gap:** this does not validate any empirical B–salinity/temperature correlation (including Juhász conventions). The application accepts a user value for B and per-plug Qv; their units and laboratory calibration must be explicitly confirmed before interpreting results.
 
+### Mercury-injection capillary pressure (MICP)
+
+- **Status:** MINOR — Washburn conversion, diameter/radius convention, and the 1 psia numerical case are regression-tested.
+- **Equation/method checked:** Washburn’s non-wetting capillary relation in diameter form, d = −4σcosθ/P. The implementation takes σ in dyne/cm, θ in degrees, and P in psia; it converts to SI internally, returns d in µm, and subsequently reports r = d/2 where a radius is needed.
+- **Authoritative source verified:** Washburn, “The Dynamics of Capillary Flow,” *Physical Review* **17**(3) (1921), 273–283, DOI: 10.1103/PhysRev.17.273.
+- **Automated coverage:** the micpWashburnDiameter regression evaluates P = 1 psia, σ = 485 dyne/cm, θ = 130°, producing d = 180.863 µm and r = 90.432 µm.
+- **Remaining gap:** 485 dyne/cm and 130° are conventional mercury-intrusion settings, not universal physical constants; each instrument’s stated surface tension, advancing contact angle, and pressure calibration require confirmation. The pressure conversion and pore-throat **diameter** convention are covered, but a complete instrument-output benchmark remains REVIEW REQUIRED.
+
