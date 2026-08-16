@@ -180,3 +180,48 @@ test("porosity-permeability regressions recover deterministic power and exponent
  const power=calculationFunctions.fitPowerLaw([.1,.2,.3,.4].map(phi=>({phi,k:5*phi**2}))); closeTo(power.c0,5); closeTo(power.c1,2); closeTo(power.evalAt(.5),1.25);
  const exp=calculationFunctions.fitExponential([.1,.2,.3,.4].map(phi=>({phi,k:Math.exp(1+3*phi)}))); closeTo(exp.a,1); closeTo(exp.b,3); closeTo(exp.evalAt(.5),Math.exp(2.5));
 });
+
+
+test("amottUsbm preserves Amott-Harvey, USBM, and classification output", () => {
+  // Synthetic volumes give δw = 3/4 and δo = 1/4, so I(AH) = 0.5.
+  // A1/A2 = 10 gives the independently known USBM value log10(10) = 1.
+  const result = calculationFunctions.amottUsbm({}, [{
+    Vwsp: 3, Vwt: 4,
+    Vosp: 1, Vot: 4,
+    A1: 10, A2: 1,
+  }]);
+
+  assert.equal(result.rows.length, 1);
+  closeTo(result.rows[0].dw, 0.75);
+  closeTo(result.rows[0].doo, 0.25);
+  closeTo(result.rows[0].Iah, 0.5);
+  closeTo(result.rows[0].usbm, 1);
+  closeTo(result.headline.value, 0.5);
+  closeTo(result.alt.value, 1);
+  assert.equal(result.alt.label, "water-wet · USBM W = 1.000 · 1 sample(s)");
+});
+
+test("contactAngle preserves tangent geometry and fluid-phase mapping", () => {
+  // The baseline is horizontal. Each tangent has a 60° angle to its corresponding
+  // baseline direction because its rise/run magnitude is √3/1.
+  const points = {
+    baseline: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
+    left: [{ x: 0, y: 0 }, { x: 1, y: Math.sqrt(3) }],
+    right: [{ x: 10, y: 0 }, { x: 9, y: Math.sqrt(3) }],
+  };
+
+  const waterDrop = calculationFunctions.contactAngle(points, "water_air");
+  closeTo(waterDrop.leftAngle, 60);
+  closeTo(waterDrop.rightAngle, 60);
+  closeTo(waterDrop.thetaWater, 60);
+  assert.equal(waterDrop.setup.dropIsWater, true);
+  assert.equal(waterDrop.label, "Water-wet");
+  assert.equal(waterDrop.surface, "hydrophilic (water-wet surface)");
+
+  const oilDrop = calculationFunctions.contactAngle(points, "oil_air");
+  closeTo(oilDrop.rawAvg, 60);
+  closeTo(oilDrop.thetaWater, 120);
+  assert.equal(oilDrop.setup.dropIsWater, false);
+  assert.equal(oilDrop.label, "Slightly oil-wet");
+  assert.equal(oilDrop.surface, "hydrophobic (oil-wet surface)");
+});
