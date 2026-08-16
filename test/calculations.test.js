@@ -99,3 +99,22 @@ test("relPermJBN recovers analytic fractional-flow derivatives and filters nonpo
     closeTo(row.Sw2, sample.Swi + 0.01 * q ** 2, 1e-12);
   });
 });
+
+
+test("waxmanSmits preserves the conductivity-consistent Waxman–Smits formation factor", () => {
+  // Waxman & Smits (1968), SPE-1863-A / SPE Journal 8(2), 107–122:
+  // F* = Ro (Cw + B Qv).  This SI synthetic case uses Ro [ohm m],
+  // Cw [S/m], Qv [eq/m^3], and B [S m^2/eq], so BQv is [S/m].
+  const Cw = 10;
+  const Qv = 5;
+  const B = 0.2;
+  const rows = [0.2, 0.25, 0.3].map((phi) => ({
+    phi,
+    Ro: phi ** -2 / (Cw + B * Qv),
+  }));
+  const result = calculationFunctions.waxmanSmits({ Rw: 0.1, B, Qv }, rows);
+  assert.equal(result.rows.length, 3);
+  result.rows.forEach((row) => assert.ok(Math.abs(row.Fstar - row.phi ** -2) < 1e-10));
+  assert.ok(Math.abs(result.headline.value - 2) < 1e-10);
+  assert.ok(Math.abs(result.alt.value - 1) < 1e-10);
+});
