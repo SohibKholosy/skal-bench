@@ -65,12 +65,12 @@ test("centrifugePc reproduces the Hassler–Brunner short-core pressure and inle
   };
   const rows = [1000, 2000, 3000, 4000].map((rpm) => {
     const pc = pressureAt(rpm);
-    return { rpm, Sbar: 0.9 - 0.002 * pc };
+    return { rpm, Sbar: 0.9 - 0.0005 * pc };
   });
   const result = calculationFunctions.centrifugePc(sample, rows);
   assert.match(result.headline.label, /Hassler-Brunner/);
   result.rows.forEach((row) => {
     closeTo(row.Pc, pressureAt(row.rpm), 1e-12);
-    closeTo(row.S1, 0.9 - 0.004 * row.Pc, 1e-12);
+    closeTo(row.S1, 0.9 - 0.001 * row.Pc, 1e-12);
   });
 });
