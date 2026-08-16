@@ -274,3 +274,26 @@ calculationFunctions.relPermJBN = (s, rows) => {
         chart: { type: "relperm", data: clean.map((p) => ({ Sw: p.Sw2, kro: p.kro, krw: p.krw })) },
       };
     };
+
+
+// Waxman–Smits conductive-clay formation-factor implementation extracted from App.jsx for regression testing.
+calculationFunctions.waxmanSmits = (s, rows) => {
+      const Cw = s.Rw > 0 ? 1 / s.Rw : NaN;
+      const pts = rows.map((r) => {
+        const Fstar = r.Ro * (Cw + s.B * r.Qv);  // intrinsic, clay-corrected
+        const Farchie = s.Rw > 0 ? r.Ro / s.Rw : NaN; // apparent, uncorrected
+        return { ...r, Fstar, Farchie, lx: Math.log10(r.phi), ly: Math.log10(Fstar), lyA: Math.log10(Farchie) };
+      }).filter((x) => Number.isFinite(x.lx) && Number.isFinite(x.ly));
+      const fit = linreg(pts.map((x) => x.lx), pts.map((x) => x.ly));
+      const mStar = -fit.slope;
+      const aStar = Math.pow(10, fit.intercept);
+      const fitA = linreg(pts.map((x) => x.lx), pts.map((x) => x.lyA));
+      const mApp = -fitA.slope;
+      return {
+        rows: pts,
+        headline: { label: "Clay-corrected cementation exponent m*", value: mStar, unit: "—" },
+        alt: { label: `a* = ${fmtForCentrifuge(aStar, 3)} · uncorrected (clean-Archie) m would be ${fmtForCentrifuge(mApp, 3)}, biased low by clay conductivity · ${pts.length} plugs`, value: aStar, unit: "—" },
+        r2: fit.r2,
+        chart: { type: "xyfit", points: pts.map((x) => ({ x: x.lx, y: x.ly })), fit, xLabel: "log₁₀ porosity", yLabel: "log₁₀ F* (clay-corrected)" },
+      };
+    };
