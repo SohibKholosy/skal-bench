@@ -574,7 +574,7 @@ const MODULES = [
       { key: "Sbar", label: "Average water saturation", unit: "fraction" },
     ],
     minRows: 4,
-    calc: calculationFunctions.centrifugePc,,
+    calc: calculationFunctions.centrifugePc,
   },
   {
     id: "wettability",
