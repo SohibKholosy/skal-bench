@@ -63,3 +63,15 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Dependency review: `relativePermeability.js → math.js`; `index.js → relativePermeability.js`. Neither module imports the entrypoint, so no circular import or new domain coupling was introduced.
 - Behavior-preservation check: 14/14 regression tests passed after extraction. No scientific calculation, calculated output, or user-visible behavior changed.
 - Current `src/calculations/index.js`: 235 lines. Remaining technical debt is limited to the unextracted non-relative-permeability domains retained there for later, separately tested increments.
+
+## Completed increment: capillary pressure / MICP / centrifuge
+
+- Created `src/calculations/capillaryPressure.js`.
+- Moved the complete `centrifugePc` reduction, including the Hassler–Brunner branch and the existing regularized direct-inversion, monotonicity projection, selection threshold, and all local numerical logic.
+- Moved `micpWashburnDiameter`, retaining its existing pressure conversion, surface-tension conversion, contact-angle convention, and diameter result.
+- No capillary helper moved separately: all numerical helpers used by centrifuge remain local to its function. The pre-existing `fmtForCentrifuge` helper remains in `index.js` because electrical, stress, rock-typing, and correlation functions also use it; the entrypoint passes it to centrifuge solely to retain the existing labels.
+- Duplicate-logic review: one production definition each of `centrifugePc` and `micpWashburnDiameter`, both in `capillaryPressure.js`; no residual assignments remain in `index.js` or `App.jsx`.
+- Dependency review: `index.js → capillaryPressure.js`; the capillary module has no imports and no access to UI state. No circular import or hidden UI dependency was introduced.
+- Syntax review: no duplicate-comma patterns were found in the edited production files.
+- Behavior-preservation check: 14/14 regression tests passed after extraction. No scientific calculation, calculated output, or user-visible behavior changed.
+- Current `src/calculations/index.js`: 132 lines. Remaining technical debt is limited to the unextracted electrical, NMR, stress, rock-typing, and correlation domains retained there for later independently tested increments.
