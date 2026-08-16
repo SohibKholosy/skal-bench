@@ -52,3 +52,14 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Behavior-preservation check: 14/14 regression tests passed after the extraction. No scientific or user-visible output changed.
 - The production dependency direction is one-way: `index.js → math.js`, `index.js → permeability.js`, and `permeability.js → math.js`; no circular import was introduced.
 - Current `src/calculations/index.js`: 365 lines. The remaining technical debt is the still-unextracted domain functions in that file; they will be moved only as separately tested increments.
+
+## Completed increment: relative permeability
+
+- Created `src/calculations/relativePermeability.js`.
+- Moved the unchanged production logic for steady-state oil/water relative permeability, `relPermJBN`, and `coreyPredict`.
+- The steady-state calculator was previously an inline `App.jsx` configuration closure. Its configuration now calls `calculationFunctions.relPermSteady`; JBN and Corey continue through the same entrypoint.
+- Shared dependency: `relPermSteady` imports `areaFromDiameter` from `math.js`. The entrypoint supplies the pre-existing fixed-decimal formatter to steady-state and JBN so their displayed labels retain their prior values.
+- Duplicate-logic review: the steady-state Darcy calculation occurs once in `relativePermeability.js`; obsolete JBN and Corey definitions were removed from `index.js`.
+- Dependency review: `relativePermeability.js → math.js`; `index.js → relativePermeability.js`. Neither module imports the entrypoint, so no circular import or new domain coupling was introduced.
+- Behavior-preservation check: 14/14 regression tests passed after extraction. No scientific calculation, calculated output, or user-visible behavior changed.
+- Current `src/calculations/index.js`: 235 lines. Remaining technical debt is limited to the unextracted non-relative-permeability domains retained there for later, separately tested increments.
