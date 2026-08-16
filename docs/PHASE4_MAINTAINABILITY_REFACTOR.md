@@ -88,3 +88,11 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Syntax review: no duplicate-comma patterns were found in the edited production files.
 - Behavior-preservation check: 14/14 regression tests passed after extraction. No scientific calculation, calculated output, or user-visible behavior changed.
 - Current `src/calculations/index.js`: 137 lines. Remaining technical debt is limited to unextracted electrical, NMR, stress, rock-typing, and correlation domains. The existing 14-test suite has no dedicated Amott/USBM or contact-angle regression case; adding coverage belongs to a future testing scope, not this behavior-preserving extraction.
+
+## Completed increment: wettability regression coverage
+
+- Added two deterministic regression tests in `test/calculations.test.js`, both importing `calculationFunctions` from the shared production entrypoint.
+- Amott/USBM coverage verifies the synthetic Amott displacement ratios, Amott–Harvey index, USBM `log₁₀(A1/A2)` value, result selection, and the existing water-wet output label.
+- Contact-angle coverage uses a 60° analytic tangent geometry and verifies the current water-drop and oil-drop phase mapping, including the supplementary water-angle result and existing classification/surface labels.
+- No production calculation, scientific output, threshold, convention, default, or user-visible behavior changed. The Phase 3 contact-angle classification review status is unchanged.
+- Behavior-preservation check: all prior 14 tests remain passing; total regression suite is now 16/16. No duplicate-comma patterns were found in the edited test or wettability files.
