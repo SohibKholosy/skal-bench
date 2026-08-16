@@ -128,3 +128,11 @@ test("micp Washburn inversion gives the documented 1 psia pore-throat diameter",
   closeTo(diameterUm, 180.863, 0.001);
   closeTo(diameterUm / 2, 90.432, 0.001);
 });
+
+
+test("NMR SDR and Timur-Coates retain their empirical power-law forms", () => {
+  // Kenyon et al. (1988), SPE-15643-PA, establishes k = a phi^m T2LM^n.
+  // Timur-Coates has the general form (phi/C)^p (FFI/BVI)^q; coefficients are empirical.
+  closeTo(calculationFunctions.nmrSDR(0.25, 10, { a: 4, m: 4, n: 2 }), 1.5625);
+  closeTo(calculationFunctions.nmrTimurCoates(0.2, 0.15, 0.05, { C: 0.1, p: 2, q: 2 }), 36);
+});
