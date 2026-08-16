@@ -775,7 +775,7 @@ const MODULES = [
       { key: "Qv", label: "Cation exchange capacity per pore volume (Qv)", unit: "meq/cm³" },
     ],
     minRows: 4,
-    calc: calculationFunctions.waxmanSmits,,
+    calc: calculationFunctions.waxmanSmits,
   },
   {
     id: "stressDependence",
