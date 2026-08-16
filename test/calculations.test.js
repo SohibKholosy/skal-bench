@@ -74,3 +74,28 @@ test("centrifugePc reproduces the Hassler–Brunner short-core pressure and inle
     closeTo(row.S1, 0.9 - 0.0002 * row.Pc, 1e-12);
   });
 });
+
+
+test("relPermJBN recovers analytic fractional-flow derivatives and filters nonpositive injection", () => {
+  // JBN convention: fo = dNpD/dQiD, kro = fo d(1/QiD)/d[1/(QiD IR)],
+  // krw = (1-fo) d(1/QiD)/d[1/(QiD IR)].
+  // Source: Johnson, Bossler & Naumann (1959), Trans. AIME 216, 370–372,
+  // DOI 10.2118/1023-G. Here NpD = 0.6 QiD - 0.01 QiD² and IR = 0.8.
+  const sample = { Vp: 10, dP0: 10, Swi: 0.2, smooth: 0 };
+  const rows = [{ QiD: 0, Np: 0, dP: 10 }];
+  for (let QiD = 1; QiD <= 5; QiD++) {
+    const NpD = 0.6 * QiD - 0.01 * QiD ** 2;
+    rows.push({ QiD, Np: NpD * sample.Vp, dP: sample.dP0 / 0.8 });
+  }
+  const result = calculationFunctions.relPermJBN(sample, rows);
+  assert.equal(result.rows.length, 5);
+  // Central differences are exact for this quadratic synthetic production curve.
+  result.rows.slice(1, 4).forEach((row) => {
+    const q = row.QiD;
+    const fo = 0.6 - 0.02 * q;
+    closeTo(row.fo, fo, 1e-12);
+    closeTo(row.kro, 0.8 * fo, 1e-12);
+    closeTo(row.krw, 0.8 * (1 - fo), 1e-12);
+    closeTo(row.Sw2, sample.Swi + 0.01 * q ** 2, 1e-12);
+  });
+});
