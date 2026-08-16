@@ -167,3 +167,10 @@ test("stressDependence recovers an empirical exponential stress trend", () => {
   const result=calculationFunctions.stressDependence({sigmaRes:2000},rows);
   closeTo(result.headline.value,k0*Math.exp(-2)); closeTo(result.alt.value,c); closeTo(result.r2,1);
 });
+
+
+test("rockTyping reproduces Winland r35 and Amaefule RQI/FZI units", () => {
+ const phi=.2,k=100; const r=calculationFunctions.rockTyping({},[{phi,k},{phi,k},{phi,k}]); const p=r.rows[0];
+ closeTo(p.r35W,Math.pow(10,.732+.588*Math.log10(k)-.864*Math.log10(20)));
+ closeTo(p.RQI,.0314*Math.sqrt(k/phi)); closeTo(p.FZI,p.RQI/(phi/(1-phi)));
+});
