@@ -305,3 +305,10 @@ calculationFunctions.micpWashburnDiameter = (pressurePsia, sigmaDynePerCm, theta
   const dynePerCmToNPerM = 1e-3;
   return ((-4 * sigmaDynePerCm * dynePerCmToNPerM * Math.cos((thetaDegrees * Math.PI) / 180)) / (pressurePsia * psiToPa)) * 1e6;
 };
+
+
+// Empirical NMR permeability correlations. Coefficients must be calibrated for the applicable formation and units.
+calculationFunctions.nmrSDR = (phi, t2LogMean, coefficients) =>
+  coefficients.a * Math.pow(phi, coefficients.m) * Math.pow(t2LogMean, coefficients.n);
+calculationFunctions.nmrTimurCoates = (phi, ffi, bvi, coefficients) =>
+  Math.pow(phi / coefficients.C, coefficients.p) * Math.pow(ffi / bvi, coefficients.q);
