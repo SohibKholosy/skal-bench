@@ -346,69 +346,7 @@ const MODULES = [
       { key: "dP", label: "Pressure drop at this point", unit: "psi" },
     ],
     minRows: 6,
-    calc: (s, rows) => {
-      const withQi = rows.filter((r) => r.QiD > 0).sort((a, b) => a.QiD - b.QiD);
-      const pts0 = withQi.map((r) => {
-        const NpD = r.Np / s.Vp;
-        const IR = s.dP0 / r.dP;
-        return { ...r, NpD, IR, x: 1 / r.QiD, y: 1 / (r.QiD * IR) };
-      });
-      // Savitzky–Golay quadratic smoother, 5-point window (coefficients [-3,12,17,12,-3]/35).
-      // JBN takes two numerical derivatives of the production and pressure data, so raw scatter is
-      // strongly amplified — especially just after breakthrough. Smoothing the monotone series NpD
-      // and y before differentiating is the standard remedy (Savitzky & Golay, 1964, Anal. Chem.
-      // 36(8), 1627–1639); endpoints are left untouched. Set the window to 0 to disable.
-      if (s.smooth >= 5 && pts0.length >= 5) {
-        const sg = (arr) => {
-          const out = arr.slice();
-          for (let i = 2; i < arr.length - 2; i++) {
-            out[i] = (-3 * arr[i - 2] + 12 * arr[i - 1] + 17 * arr[i] + 12 * arr[i + 1] - 3 * arr[i + 2]) / 35;
-          }
-          return out;
-        };
-        const sNpD = sg(pts0.map((p) => p.NpD));
-        const sY = sg(pts0.map((p) => p.y));
-        pts0.forEach((p, i) => { p.NpD = sNpD[i]; p.y = sY[i]; });
-      }
-      const n = pts0.length;
-      const derived = pts0.map((p, i) => {
-        const prev = pts0[Math.max(0, i - 1)];
-        const next = pts0[Math.min(n - 1, i + 1)];
-        const dNpD = next.NpD - prev.NpD;
-        const dQiD = next.QiD - prev.QiD;
-        const dx = next.x - prev.x;
-        const dy = next.y - prev.y;
-        const fo = dQiD !== 0 ? dNpD / dQiD : NaN;
-        const slope = dy !== 0 ? dx / dy : NaN;
-        const kro = fo * slope;
-        const krw = (1 - fo) * slope;
-        const Sw2 = s.Swi + p.NpD - p.QiD * fo;
-        return { ...p, fo, slope, kro, krw, Sw2 };
-      });
-      const clean = derived
-        .filter((p) => Number.isFinite(p.kro) && Number.isFinite(p.krw) && Number.isFinite(p.Sw2) && p.kro >= 0 && p.krw >= 0 && p.Sw2 >= 0 && p.Sw2 <= 1)
-        .sort((a, b) => a.Sw2 - b.Sw2);
-
-      let crossoverSw = NaN;
-      for (let i = 0; i < clean.length - 1; i++) {
-        const d1 = clean[i].kro - clean[i].krw;
-        const d2 = clean[i + 1].kro - clean[i + 1].krw;
-        if (d1 === 0) { crossoverSw = clean[i].Sw2; break; }
-        if ((d1 > 0) !== (d2 > 0)) {
-          const t = d1 / (d1 - d2);
-          crossoverSw = clean[i].Sw2 + t * (clean[i + 1].Sw2 - clean[i].Sw2);
-          break;
-        }
-      }
-      const krwAtEnd = clean[clean.length - 1]?.krw;
-
-      return {
-        rows: clean,
-        headline: { label: "Water saturation at kro = krw (crossover)", value: crossoverSw, unit: "fraction" },
-        alt: { label: `${clean.length} of ${n} points physically valid; krw at Sw=${fmt(clean[clean.length - 1]?.Sw2, 3)}`, value: krwAtEnd, unit: "fraction" },
-        chart: { type: "relperm", data: clean.map((p) => ({ Sw: p.Sw2, kro: p.kro, krw: p.krw })) },
-      };
-    },
+    calc: calculationFunctions.relPermJBN,,
   },
   {
     id: "relPermCorey",
