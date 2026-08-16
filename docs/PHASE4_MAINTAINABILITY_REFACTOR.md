@@ -24,7 +24,7 @@ The existing shared calculation implementation will be moved into domain modules
 
 | Group | Production source before | Planned target | Regression protection | Status |
 |---|---|---|---|---|
-| Shared math/helpers and baseline permeability | calculations.js | calculations/math.js, calculations/permeability.js | gas, Klinkenberg, pulse, liquid | Pending |
+| Shared calculation entrypoint (initial move) | calculations.js | calculations/index.js | all 14 tests | Complete — implementation moved intact; legacy file re-exports |
 | Relative permeability | calculations.js | calculations/relativePermeability.js | JBN, Corey | Pending |
 | Capillary pressure | calculations.js | calculations/capillaryPressure.js | centrifuge, MICP | Pending |
 | Electrical | calculations.js | calculations/electrical.js | Waxman–Smits, formation factor | Pending |
@@ -34,3 +34,11 @@ The existing shared calculation implementation will be moved into domain modules
 ## Deferred scientific matters
 
 The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discrepancy discovered during this refactor will be documented, not corrected, in this branch.
+
+## Completed increment: shared entrypoint
+
+- Created `src/calculations/index.js` containing the prior `calculations.js` implementation unchanged.
+- Changed `src/calculations.js` to a single re-export for temporary compatibility; it contains no scientific calculation implementation.
+- Updated `App.jsx` and the regression suite to import `src/calculations/index.js` directly.
+- Behavior-preservation check: 14/14 regression tests passed after this move.
+- No scientific issues were discovered or addressed in this increment.
