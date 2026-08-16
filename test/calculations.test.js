@@ -136,3 +136,17 @@ test("NMR SDR and Timur-Coates retain their empirical power-law forms", () => {
   closeTo(calculationFunctions.nmrSDR(0.25, 10, { a: 4, m: 4, n: 2 }), 1.5625);
   closeTo(calculationFunctions.nmrTimurCoates(0.2, 0.15, 0.05, { C: 0.1, p: 2, q: 2 }), 36);
 });
+
+
+test("coreyPredict recovers endpoint-normalized Corey curves on a synthetic round trip", () => {
+  const result = calculationFunctions.coreyPredict(
+    { Swi: 0.2, Sor: 0.2, KroSwi: 100, KrwSor: 40, lambdaKro: 2, lambdaKrw: 3, muo: 2, muw: 1 },
+    { teal: "teal", amber: "amber", clay: "clay" },
+  );
+  assert.equal(result.table.length, 50);
+  closeTo(result.table[0].Sw, 0.2); closeTo(result.table[0].kro, 1); closeTo(result.table[0].krw, 0);
+  const last = result.table.at(-1);
+  closeTo(last.Sw, 0.8); closeTo(last.kro, 0); closeTo(last.krw, 0.4);
+  const middle = result.table[25];
+  closeTo(middle.kro, (1 - middle.Se) ** 2); closeTo(middle.krw, 0.4 * middle.Se ** 3);
+});
