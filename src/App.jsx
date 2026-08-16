@@ -4465,7 +4465,7 @@ function micpExtract(struct) {
 
 /* Washburn (1921): d = -4 σ cosθ / P. σ dyne/cm, θ degrees, P psia, d in µm. */
 function washburnD(P, sigma, theta) {
-  return ((-4 * sigma * MICP_DYNE_TO_NM * Math.cos(theta * MICP_RAD)) / (P * MICP_PSI_TO_PA)) * 1e6;
+  return calculationFunctions.micpWashburnDiameter(P, sigma, theta);
 }
 /* Pc(2) = Pc(1) · (σcosθ)₂ / (σcosθ)₁ */
 function pcConvert(Pc, s1, t1, s2, t2, useAngle) {
