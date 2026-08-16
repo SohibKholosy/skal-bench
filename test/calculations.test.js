@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { calculationFunctions } from "../src/calculations.js";
+import { calculationFunctions } from "../src/calculations/index.js";
 
 const closeTo = (actual, expected, tolerance = 1e-10) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `expected ${actual} to be within ${tolerance} of ${expected}`);
