@@ -134,3 +134,15 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Syntax review: no duplicate-comma patterns were found in the edited production and test files.
 - Behavior-preservation check: 18/18 regression tests passed. No scientific calculation, calculated output, user-visible behavior, model form, parameter, unit, default, extrapolation behavior, or empirical assumption changed.
 - Current `src/calculations/index.js`: 85 lines. Remaining technical debt is limited to the unextracted rock-typing and porosity–permeability correlation domains; standalone Quick Calculator UI formulas remain intentionally outside this table-driven reducer extraction.
+
+## Completed increment: rock typing and porosity–permeability correlations
+
+- Created `src/calculations/correlations.js`.
+- Moved the unchanged `rockTyping`, `fitPowerLaw`, and `fitExponential` implementations, including Winland r35 coefficients, base-10 logarithms, RQI/FZI equations, port classes, log transforms, regression method, prediction functions, labels, and output structures.
+- Shared dependencies: `avg` and `linreg` from `math.js`. The entrypoint supplies the existing fixed-decimal formatter for unchanged correlation equation and rock-typing text.
+- Direct regression coverage already existed: one deterministic case verifies Winland r35 and Amaefule RQI/FZI calculations; another verifies deterministic power/exponential coefficients and predictions. No additional test was needed.
+- Duplicate-logic review: one production definition each of `rockTyping`, `fitPowerLaw`, and `fitExponential`, all in `correlations.js`. `App.jsx` uses the shared entrypoint directly or through aliases initialized from it.
+- Dependency review: `index.js → correlations.js → math.js`; no circular import or UI-state dependency was introduced.
+- Syntax review: no duplicate-comma patterns were found in the edited production and test files.
+- Behavior-preservation check: 18/18 regression tests passed. No scientific calculation, calculated output, user-visible behavior, coefficient, unit, threshold, fit method, prediction, extrapolation behavior, or Phase 3 review status changed.
+- Current `src/calculations/index.js`: 57 lines and now serves as a calculation-composition entrypoint. Remaining technical debt is broader screen-level and Quick Calculator logic still in `App.jsx`, which is outside this table-driven reducer extraction scope.
