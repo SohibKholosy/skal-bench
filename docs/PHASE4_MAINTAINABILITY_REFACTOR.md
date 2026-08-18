@@ -122,3 +122,15 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Syntax review: no duplicate-comma patterns were found in the edited production and test files.
 - Behavior-preservation check: 18/18 regression tests passed. No scientific calculation, calculated output, user-visible behavior, NMR coefficient, cutoff, default, unit, or Phase 3 NMR review status changed.
 - Current `src/calculations/index.js`: 104 lines. Remaining technical debt is limited to the unextracted stress, rock-typing, and porosity–permeability correlation domains; standalone Quick Calculator UI formulas remain intentionally outside this table-driven reducer extraction.
+
+## Completed increment: stress-dependent permeability
+
+- Created `src/calculations/stress.js`.
+- Moved the unchanged `stressDependence` empirical log-linear fit, including stress sorting, `ln(k)` regression, fitted sensitivity, zero-stress extrapolation, reservoir-stress prediction, retained-permeability calculation, units, labels, and output structure.
+- Shared dependency: `linreg` from `math.js`. The entrypoint supplies the existing fixed-decimal formatter for unchanged result labels.
+- Direct regression coverage already existed: the deterministic exponential-trend test verifies the fitted stress sensitivity, predicted permeability at a specified reservoir stress, and fit quality. No additional test was needed.
+- Duplicate-logic review: one production definition of `stressDependence`, in `stress.js`. `App.jsx` continues to call `calculationFunctions.stressDependence`.
+- Dependency review: `index.js → stress.js → math.js`; no circular import or UI-state dependency was introduced.
+- Syntax review: no duplicate-comma patterns were found in the edited production and test files.
+- Behavior-preservation check: 18/18 regression tests passed. No scientific calculation, calculated output, user-visible behavior, model form, parameter, unit, default, extrapolation behavior, or empirical assumption changed.
+- Current `src/calculations/index.js`: 85 lines. Remaining technical debt is limited to the unextracted rock-typing and porosity–permeability correlation domains; standalone Quick Calculator UI formulas remain intentionally outside this table-driven reducer extraction.
