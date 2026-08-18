@@ -108,3 +108,17 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Syntax review: no duplicate-comma patterns were found in the edited production and test files.
 - Behavior-preservation check: 17/17 regression tests passed. No scientific calculation, calculated output, user-visible behavior, or Phase 3 Waxman–Smits review status changed.
 - Current `src/calculations/index.js`: 89 lines. Remaining technical debt is limited to the unextracted NMR, stress, rock-typing, and porosity–permeability correlation domains; standalone Quick Calculator UI formulas remain intentionally outside this table-driven reducer extraction.
+
+## Completed increment: NMR
+
+- Created `src/calculations/nmr.js`.
+- Moved the unchanged SDR and Timur–Coates functions; tri-exponential fitting, ILT inversion, NMR input parsing, downsampling, lithology defaults, and the BVI stability floor also now reside in this NMR-only module.
+- Extracted the shared deterministic cutoff reduction as `nmrT2Metrics`. Both the component-fit and ILT paths call it with their existing cutoffs, retaining inclusive `T2 ≤ cutoff` classification, T2 log-mean behavior, output fields, and the existing zero-total distinction between the two paths.
+- The React screen retains file I/O, state, calibration interaction, report generation, and rendering. It invokes all moved NMR calculations and preset data through the shared calculation entrypoint.
+- Shared dependency: none; `nmr.js` is self-contained. No math helper is needed.
+- Direct regression coverage: the existing test verifies SDR and Timur–Coates forms. A new deterministic synthetic-amplitude case verifies current inclusive CBW/BVI cutoff handling, FFI, BVI fraction, and the T2 log mean. It does not endorse any lithology preset or cutoff as universal.
+- Duplicate-logic review: one production definition each of SDR, Timur–Coates, ExpDec3 fitting, ILT inversion, and cutoff metrics, all in `nmr.js`.
+- Dependency review: `index.js → nmr.js`; `nmr.js` imports neither the entrypoint nor UI code, so no circular import or UI-state dependency was introduced.
+- Syntax review: no duplicate-comma patterns were found in the edited production and test files.
+- Behavior-preservation check: 18/18 regression tests passed. No scientific calculation, calculated output, user-visible behavior, NMR coefficient, cutoff, default, unit, or Phase 3 NMR review status changed.
+- Current `src/calculations/index.js`: 104 lines. Remaining technical debt is limited to the unextracted stress, rock-typing, and porosity–permeability correlation domains; standalone Quick Calculator UI formulas remain intentionally outside this table-driven reducer extraction.
