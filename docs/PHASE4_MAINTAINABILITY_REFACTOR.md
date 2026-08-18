@@ -191,7 +191,7 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Static review: no duplicated-comma patterns, no remaining calculation assignments in `index.js`, no detected domain-module React/UI-state imports, no circular import direction, and no duplicate implementation of each extracted production function.
 - One unused `math.js` import left by extraction was removed from `index.js`; this had no behavioral effect and was followed by the full 18-test run.
 - Local `npm ci`, `npm test`, and `npm run build` cannot validate the repository because the supplied local workspace is not a complete checkout and lacks the branch's package manifest/lockfile context. The remote `.github/workflows/ci.yml` is configured to run `npm ci`, `npm test`, and `npm run build` on pull requests.
-- GitHub status at final review: no open pull request and no workflow run/status attached to final commit `7a665096ce2b57f9326c3e6ce7abbda9e49a6120`; GitHub Actions verification is therefore pending.
+- GitHub status at final review: no open pull request and no workflow run/status for this branch; GitHub Actions verification is therefore pending.
 
 ### Scientific safety and deferred work
 
