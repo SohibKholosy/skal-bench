@@ -225,3 +225,20 @@ test("contactAngle preserves tangent geometry and fluid-phase mapping", () => {
   assert.equal(oilDrop.label, "Slightly oil-wet");
   assert.equal(oilDrop.surface, "hydrophobic (oil-wet surface)");
 });
+
+
+test("resistivityIndexFit recovers the constrained Archie saturation exponent", () => {
+  // For IR = Sw^-2, log(IR) = -2 log(Sw), exactly satisfying the
+  // production constraint IR = 1 at Sw = 1.
+  const Ro = 10;
+  const rows = [1, 0.8, 0.6, 0.4].map((Sw) => ({ Sw, Rt: Ro * Sw ** -2 }));
+  const result = calculationFunctions.resistivityIndexFit({ Ro }, rows);
+
+  assert.equal(result.rows.length, 4);
+  result.rows.forEach((row) => closeTo(row.IR, row.Sw ** -2));
+  closeTo(result.headline.value, 2);
+  closeTo(result.alt.value, 2);
+  closeTo(result.r2, 1);
+  closeTo(result.chart.fit.slope, -2);
+  assert.equal(result.chart.fit.intercept, 0);
+});
