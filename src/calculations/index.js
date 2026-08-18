@@ -1,4 +1,3 @@
-import { avg, linreg } from "./math.js";
 import { gasSteady, gasSingle, liquidCoreflood, pulseDecay } from "./permeability.js";
 import { coreyPredict, relPermJBN, relPermSteady } from "./relativePermeability.js";
 import { centrifugePc, micpWashburnDiameter } from "./capillaryPressure.js";
