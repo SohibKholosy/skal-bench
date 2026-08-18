@@ -242,3 +242,18 @@ test("resistivityIndexFit recovers the constrained Archie saturation exponent", 
   closeTo(result.chart.fit.slope, -2);
   assert.equal(result.chart.fit.intercept, 0);
 });
+
+
+test("nmrT2Metrics preserves inclusive cutoff handling and T2 log mean", () => {
+  // The inputs are synthetic amplitudes, not a claim about a universal cutoff.
+  // The production convention includes a component exactly at the cutoff (T2 <= cutoff).
+  const entries = [{ T2: 1, A: 2 }, { T2: 10, A: 3 }, { T2: 100, A: 5 }];
+  const result = calculationFunctions.nmrT2Metrics(entries, 3, 10);
+
+  closeTo(result.total, 10);
+  closeTo(result.cbw, 2);
+  closeTo(result.bvi, 5);
+  closeTo(result.ffi, 5);
+  closeTo(result.bviFrac, 0.5);
+  closeTo(result.t2lm, Math.exp((2 * Math.log(1) + 3 * Math.log(10) + 5 * Math.log(100)) / 10));
+});
