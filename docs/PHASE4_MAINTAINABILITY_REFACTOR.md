@@ -96,3 +96,15 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Contact-angle coverage uses a 60° analytic tangent geometry and verifies the current water-drop and oil-drop phase mapping, including the supplementary water-angle result and existing classification/surface labels.
 - No production calculation, scientific output, threshold, convention, default, or user-visible behavior changed. The Phase 3 contact-angle classification review status is unchanged.
 - Behavior-preservation check: all prior 14 tests remain passing; total regression suite is now 16/16. No duplicate-comma patterns were found in the edited test or wettability files.
+
+## Completed increment: electrical properties
+
+- Created `src/calculations/electrical.js`.
+- Moved the unchanged `formationFactorFit`, `resistivityIndexFit`, and `waxmanSmits` reducers. The resistivity-index fit was previously an inline `App.jsx` calculator closure and now calls the shared entrypoint.
+- Shared dependency: the electrical module imports `linreg` from `math.js`. The entrypoint supplies the existing fixed-decimal formatter to retain all result labels, including Arps-correction and unconstrained-fit text.
+- Direct regression coverage: the pre-existing formation-factor test verifies Winsauer fitting and the Arps Celsius correction; the pre-existing Waxman–Smits test verifies the current conductivity form; a new deterministic `IR = Sw⁻²` case verifies resistivity-index calculation, the constrained saturation exponent, free fit, and origin-forced fit object.
+- Duplicate-logic review: one production definition each of `formationFactorFit`, `resistivityIndexFit`, and `waxmanSmits`, all in `electrical.js`. The three `App.jsx` modules call the shared calculation entrypoint.
+- Dependency review: `index.js → electrical.js → math.js`; no circular import or UI-state dependency was introduced.
+- Syntax review: no duplicate-comma patterns were found in the edited production and test files.
+- Behavior-preservation check: 17/17 regression tests passed. No scientific calculation, calculated output, user-visible behavior, or Phase 3 Waxman–Smits review status changed.
+- Current `src/calculations/index.js`: 89 lines. Remaining technical debt is limited to the unextracted NMR, stress, rock-typing, and porosity–permeability correlation domains; standalone Quick Calculator UI formulas remain intentionally outside this table-driven reducer extraction.
