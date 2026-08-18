@@ -629,32 +629,7 @@ const MODULES = [
       { key: "Rt", label: "Resistivity at this Sw (Rt)", unit: "Ω·m" },
     ],
     minRows: 4,
-    calc: (s, rows) => {
-      const pts = rows.map((r) => {
-        const IR = s.Ro > 0 ? r.Rt / s.Ro : NaN;
-        return { ...r, IR, lx: Math.log10(r.Sw), ly: Math.log10(IR) };
-      }).filter((x) => Number.isFinite(x.lx) && Number.isFinite(x.ly));
-      // Physically IR = 1 at Sw = 1, so log IR vs log Sw must pass through the origin. The
-      // constrained (through-origin) slope is the correct estimator; an unconstrained fit lets the
-      // intercept float and biases n on noisy data. Both are reported so the offset is visible.
-      let sxy = 0, sxx = 0;
-      for (const x of pts) { sxy += x.lx * x.ly; sxx += x.lx * x.lx; }
-      const nConstrained = sxx > 0 ? -(sxy / sxx) : NaN;
-      const free = linreg(pts.map((x) => x.lx), pts.map((x) => x.ly));
-      const nFree = -free.slope;
-      // R² of the constrained model, computed about the origin-forced prediction.
-      let ssRes = 0, ssTot = 0;
-      for (const x of pts) { const pred = -nConstrained * x.lx; ssRes += (x.ly - pred) ** 2; ssTot += x.ly ** 2; }
-      const r2c = ssTot > 0 ? 1 - ssRes / ssTot : 1;
-      const fit = { slope: -nConstrained, intercept: 0, r2: r2c };
-      return {
-        rows: pts,
-        headline: { label: "Saturation exponent n (constrained through IR=1 at Sw=1)", value: nConstrained, unit: "—" },
-        alt: { label: `Unconstrained fit n = ${fmt(nFree, 3)} (intercept ${fmt(free.intercept, 3)}) — a large offset means noisy or non-Archie data · clean water-wet rock ≈ 2 · ${pts.length} steps`, value: nFree, unit: "—" },
-        r2: r2c,
-        chart: { type: "xyfit", points: pts.map((x) => ({ x: x.lx, y: x.ly })), fit, xLabel: "log₁₀ water saturation", yLabel: "log₁₀ resistivity index" },
-      };
-    },
+    calc: calculationFunctions.resistivityIndexFit,
   },
   {
     id: "heliumPorosimetry",
