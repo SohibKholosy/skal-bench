@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { calculationFunctions } from "../src/calculations.js";
+import { calculationFunctions } from "../src/calculations/index.js";
 
 const closeTo = (actual, expected, tolerance = 1e-10) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `expected ${actual} to be within ${tolerance} of ${expected}`);
@@ -179,4 +179,81 @@ test("rockTyping reproduces Winland r35 and Amaefule RQI/FZI units", () => {
 test("porosity-permeability regressions recover deterministic power and exponential trends", () => {
  const power=calculationFunctions.fitPowerLaw([.1,.2,.3,.4].map(phi=>({phi,k:5*phi**2}))); closeTo(power.c0,5); closeTo(power.c1,2); closeTo(power.evalAt(.5),1.25);
  const exp=calculationFunctions.fitExponential([.1,.2,.3,.4].map(phi=>({phi,k:Math.exp(1+3*phi)}))); closeTo(exp.a,1); closeTo(exp.b,3); closeTo(exp.evalAt(.5),Math.exp(2.5));
+});
+
+
+test("amottUsbm preserves Amott-Harvey, USBM, and classification output", () => {
+  // Synthetic volumes give δw = 3/4 and δo = 1/4, so I(AH) = 0.5.
+  // A1/A2 = 10 gives the independently known USBM value log10(10) = 1.
+  const result = calculationFunctions.amottUsbm({}, [{
+    Vwsp: 3, Vwt: 4,
+    Vosp: 1, Vot: 4,
+    A1: 10, A2: 1,
+  }]);
+
+  assert.equal(result.rows.length, 1);
+  closeTo(result.rows[0].dw, 0.75);
+  closeTo(result.rows[0].doo, 0.25);
+  closeTo(result.rows[0].Iah, 0.5);
+  closeTo(result.rows[0].usbm, 1);
+  closeTo(result.headline.value, 0.5);
+  closeTo(result.alt.value, 1);
+  assert.equal(result.alt.label, "water-wet · USBM W = 1.000 · 1 sample(s)");
+});
+
+test("contactAngle preserves tangent geometry and fluid-phase mapping", () => {
+  // The baseline is horizontal. Each tangent has a 60° angle to its corresponding
+  // baseline direction because its rise/run magnitude is √3/1.
+  const points = {
+    baseline: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
+    left: [{ x: 0, y: 0 }, { x: 1, y: Math.sqrt(3) }],
+    right: [{ x: 10, y: 0 }, { x: 9, y: Math.sqrt(3) }],
+  };
+
+  const waterDrop = calculationFunctions.contactAngle(points, "water_air");
+  closeTo(waterDrop.leftAngle, 60);
+  closeTo(waterDrop.rightAngle, 60);
+  closeTo(waterDrop.thetaWater, 60);
+  assert.equal(waterDrop.setup.dropIsWater, true);
+  assert.equal(waterDrop.label, "Water-wet");
+  assert.equal(waterDrop.surface, "hydrophilic (water-wet surface)");
+
+  const oilDrop = calculationFunctions.contactAngle(points, "oil_air");
+  closeTo(oilDrop.rawAvg, 60);
+  closeTo(oilDrop.thetaWater, 120);
+  assert.equal(oilDrop.setup.dropIsWater, false);
+  assert.equal(oilDrop.label, "Slightly oil-wet");
+  assert.equal(oilDrop.surface, "hydrophobic (oil-wet surface)");
+});
+
+
+test("resistivityIndexFit recovers the constrained Archie saturation exponent", () => {
+  // For IR = Sw^-2, log(IR) = -2 log(Sw), exactly satisfying the
+  // production constraint IR = 1 at Sw = 1.
+  const Ro = 10;
+  const rows = [1, 0.8, 0.6, 0.4].map((Sw) => ({ Sw, Rt: Ro * Sw ** -2 }));
+  const result = calculationFunctions.resistivityIndexFit({ Ro }, rows);
+
+  assert.equal(result.rows.length, 4);
+  result.rows.forEach((row) => closeTo(row.IR, row.Sw ** -2));
+  closeTo(result.headline.value, 2);
+  closeTo(result.alt.value, 2);
+  closeTo(result.r2, 1);
+  closeTo(result.chart.fit.slope, -2);
+  assert.equal(result.chart.fit.intercept, 0);
+});
+
+
+test("nmrT2Metrics preserves inclusive cutoff handling and T2 log mean", () => {
+  // The inputs are synthetic amplitudes, not a claim about a universal cutoff.
+  // The production convention includes a component exactly at the cutoff (T2 <= cutoff).
+  const entries = [{ T2: 1, A: 2 }, { T2: 10, A: 3 }, { T2: 100, A: 5 }];
+  const result = calculationFunctions.nmrT2Metrics(entries, 3, 10);
+
+  closeTo(result.total, 10);
+  closeTo(result.cbw, 2);
+  closeTo(result.bvi, 5);
+  closeTo(result.ffi, 5);
+  closeTo(result.bviFrac, 0.5);
+  closeTo(result.t2lm, Math.exp((2 * Math.log(1) + 3 * Math.log(10) + 5 * Math.log(100)) / 10));
 });
