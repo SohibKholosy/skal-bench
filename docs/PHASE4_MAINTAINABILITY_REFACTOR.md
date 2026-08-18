@@ -146,3 +146,63 @@ The Phase 3 `REVIEW REQUIRED` items remain deferred. A possible scientific discr
 - Syntax review: no duplicate-comma patterns were found in the edited production and test files.
 - Behavior-preservation check: 18/18 regression tests passed. No scientific calculation, calculated output, user-visible behavior, coefficient, unit, threshold, fit method, prediction, extrapolation behavior, or Phase 3 review status changed.
 - Current `src/calculations/index.js`: 57 lines and now serves as a calculation-composition entrypoint. Remaining technical debt is broader screen-level and Quick Calculator logic still in `App.jsx`, which is outside this table-driven reducer extraction scope.
+
+
+## Final Phase 4 review
+
+### Original and final architecture
+
+- **Original:** `src/calculations.js` was a 472-line mixed calculation module. `App.jsx` contained additional table-calculator closures and NMR/contact-angle numerical logic. The initial shared regression suite had 14 tests.
+- **Final:** `src/calculations/index.js` is a 56-line composition entrypoint. `src/calculations.js` is a one-line compatibility re-export. Domain modules contain the single production implementation for each extracted calculation; `App.jsx` and `test/calculations.test.js` import the same `calculationFunctions` entrypoint.
+- **Shared helpers:** `math.js` owns geometry, averages, standard deviation, and regression helpers. Domain modules depend only on `math.js` where necessary; no domain module imports the entrypoint, React, or rendering code.
+
+### Extracted domain modules and functions
+
+| Domain | File | Production functions / numerical layer |
+|---|---|---|
+| Shared helpers | `math.js` | area, statistics, linear regressions |
+| Permeability | `permeability.js` | gas steady/single, pulse decay, liquid coreflood |
+| Relative permeability | `relativePermeability.js` | steady-state, JBN, Corey prediction |
+| Capillary pressure | `capillaryPressure.js` | centrifuge Hassler–Brunner/direct inversion, Washburn MICP |
+| Wettability | `wettability.js` | Amott/USBM, contact-angle geometry and interpretation |
+| Electrical | `electrical.js` | Archie/Winsauer, Arps correction, resistivity-index fit, Waxman–Smits |
+| NMR | `nmr.js` | SDR, Timur–Coates, ExpDec3, ILT, T2 metrics/cutoffs and defaults |
+| Stress | `stress.js` | empirical stress-dependent permeability |
+| Rock/correlations | `correlations.js` | Winland/FZI and power/exponential phi–k fits |
+
+### App.jsx scope and reduction
+
+- Baseline: approximately **9,347 lines**.
+- Final: approximately **8,940 lines**.
+- Reduction: approximately **407 lines**.
+- Scientific implementations removed from `App.jsx` in Phase 4 include the steady-state relative-permeability closure, Amott/USBM closure, contact-angle geometry and phase interpretation, resistivity-index fitting closure, and the reusable NMR numerical layer (fit, ILT, preprocessing, cutoff metrics, presets).
+- `App.jsx` still appropriately owns React state, routes/screens, input/file handling, chart and canvas rendering, exports, calculator metadata, report layout, and screen-level calibration interaction.
+
+### Quick Calculator scope decision
+
+**Classification B — candidate for a future dedicated refactor.** The standalone Quick Calculator formulas remain UI-local because they are small, input-to-single-answer conveniences with display-specific metadata, and they are not duplicate implementations of the extracted table-reducer functions. Several have conceptual overlap with the domain equations, so a future dedicated effort should decide whether to introduce reusable single-point calculation APIs and matching tests. They were not moved in Phase 4 to avoid an unrelated scope expansion.
+
+### Verification and safety
+
+- Baseline regression suite: **14** tests.
+- Final regression suite: **18** tests.
+- Final local calculation-suite result: **18 passed, 0 failed**.
+- Parser review: all files under `src/calculations/` parse successfully with Node.
+- Static review: no duplicated-comma patterns, no remaining calculation assignments in `index.js`, no detected domain-module React/UI-state imports, no circular import direction, and no duplicate implementation of each extracted production function.
+- One unused `math.js` import left by extraction was removed from `index.js`; this had no behavioral effect and was followed by the full 18-test run.
+- Local `npm ci`, `npm test`, and `npm run build` cannot validate the repository because the supplied local workspace is not a complete checkout and lacks the branch's package manifest/lockfile context. The remote `.github/workflows/ci.yml` is configured to run `npm ci`, `npm test`, and `npm run build` on pull requests.
+- GitHub status at final review: no open pull request and no workflow run/status attached to final commit `7a665096ce2b57f9326c3e6ce7abbda9e49a6120`; GitHub Actions verification is therefore pending.
+
+### Scientific safety and deferred work
+
+No scientific formulas, constants, unit conversions, defaults, algorithms, thresholds, or calculated outputs were intentionally changed during Phase 4. No user-visible behavior was intentionally changed.
+
+Phase 3 scientific items intentionally left unresolved include: centrifuge direct-inversion regularization/selection validation; JBN smoothing and endpoint practice; Waxman–Smits B/Qv dimensional conventions; instrument-specific MICP settings; NMR preset coefficients and T2 cutoff provenance; empirical stress-model applicability; Winland port-class thresholds; contact-angle seven-band classification; penetrometer thresholds; and correlation extrapolation limits. Phase 4 only preserved and relocated these behaviors.
+
+### Final changed files
+
+Created:
+`docs/PHASE4_MAINTAINABILITY_REFACTOR.md`; `src/calculations/index.js`; `src/calculations/math.js`; `src/calculations/permeability.js`; `src/calculations/relativePermeability.js`; `src/calculations/capillaryPressure.js`; `src/calculations/wettability.js`; `src/calculations/electrical.js`; `src/calculations/nmr.js`; `src/calculations/stress.js`; `src/calculations/correlations.js`.
+
+Modified:
+`src/App.jsx`; `src/calculations.js`; `test/calculations.test.js`.
