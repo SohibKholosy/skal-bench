@@ -4,6 +4,18 @@ import { coreyPredict, relPermJBN, relPermSteady } from "./relativePermeability.
 import { centrifugePc, micpWashburnDiameter } from "./capillaryPressure.js";
 import { amottUsbm, CA_SETUPS, caSetup, contactAngle } from "./wettability.js";
 import { formationFactorFit, resistivityIndexFit, waxmanSmits } from "./electrical.js";
+import {
+  NMR_LITHOLOGY_DEFAULTS,
+  NMR_MIN_BVI_FRACTION,
+  nmrComputeT2DistributionILT,
+  nmrDownsampleEven,
+  nmrDownsampleLog,
+  nmrFitExpDec3,
+  nmrParseDecayTable,
+  nmrSDR,
+  nmrT2Metrics,
+  nmrTimurCoates,
+} from "./nmr.js";
 
 const fmtForCentrifuge = (n, d = 3) => (Number.isFinite(n) ? n.toFixed(d) : "—");
 
@@ -24,14 +36,17 @@ export const calculationFunctions = {
   formationFactorFit: (s, rows) => formationFactorFit(s, rows, fmtForCentrifuge),
   resistivityIndexFit: (s, rows) => resistivityIndexFit(s, rows, fmtForCentrifuge),
   waxmanSmits: (s, rows) => waxmanSmits(s, rows, fmtForCentrifuge),
+  nmrSDR,
+  nmrTimurCoates,
+  nmrFitExpDec3,
+  nmrComputeT2DistributionILT,
+  nmrParseDecayTable,
+  nmrDownsampleEven,
+  nmrDownsampleLog,
+  nmrT2Metrics,
+  nmrLithologyDefaults: NMR_LITHOLOGY_DEFAULTS,
+  nmrMinBviFraction: NMR_MIN_BVI_FRACTION,
 };
-
-// Empirical NMR permeability correlations. Coefficients must be calibrated for the applicable formation and units.
-calculationFunctions.nmrSDR = (phi, t2LogMean, coefficients) =>
-  coefficients.a * Math.pow(phi, coefficients.m) * Math.pow(t2LogMean, coefficients.n);
-calculationFunctions.nmrTimurCoates = (phi, ffi, bvi, coefficients) =>
-  Math.pow(phi / coefficients.C, coefficients.p) * Math.pow(ffi / bvi, coefficients.q);
-
 
 // Empirical log-linear stress-sensitivity fit: c has inverse units of the supplied stress.
 calculationFunctions.stressDependence = (s, rows) => {
