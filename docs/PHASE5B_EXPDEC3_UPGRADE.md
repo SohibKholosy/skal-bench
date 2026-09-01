@@ -55,6 +55,10 @@ A noise-free, well-separated three-component synthetic case (700 source points; 
 
 The requested 7,000 / 23,000 / 55,000 full-resolution fits have not been represented as completed: the observed runtime scales too high for the local validation environment, and a 55,000-point full fit would be unsuitable for the normal regression suite. They remain **REVIEW REQUIRED**. The production bounded reducer has direct deterministic invariant coverage; further full-versus-reduced numerical benchmarking should run in a dedicated performance-validation environment with a recorded timeout budget and the same production fitter.
 
+## Guardrail correction
+
+The audit identified one incorrect status outcome: an exactly flat finite input had previously been represented as a converged three-component solution with all amplitudes zero. A regression test was added before the correction. Such an input now returns `Insufficient signal` with the reason “Prepared signal has no usable decay.” This affects only the no-decay input-status path; it does not alter the objective, parameterization, optimizer, reducer, or output of a usable decay.
+
 ## Current Phase 5B audit status
 
 - **PASS (implementation):** ordered-positive T2 parameterization, non-negative amplitudes, free baseline, deterministic multi-start execution, and explicit residual/stability diagnostics.
