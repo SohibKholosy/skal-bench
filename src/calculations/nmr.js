@@ -133,10 +133,10 @@ function downsampleLog(arr, maxN) {
   return out;
 }
 
-/* Deterministic index selection for the bounded ExpDec3 fit. This deliberately
- * reproduces the established log reducer: index 0 plus unique rounded log-space
- * candidates. The diagnostics make the effective fitting data explicit without
- * altering the selected points for a valid prepared signal. */
+/* Deterministic index selection for the bounded ExpDec3 fit. The selector uses
+ * exact-cardinality, uniform-in-acquisition-time indices. Unlike rounded log-index
+ * candidates, this preserves the configured cardinality and avoids changing the
+ * implicit least-squares weighting when source density changes. */
 function selectExpDec3FittingIndices(time, values, maxN = 500) {
   const n = Math.min(time?.length || 0, values?.length || 0);
   const diagnostics = {
@@ -160,8 +160,7 @@ function selectExpDec3FittingIndices(time, values, maxN = 500) {
   if (n <= maxN) {
     for (let index = 0; index < n; index++) candidates.push(index);
   } else {
-    const hi = Math.log10(n - 1);
-    for (let i = 0; i < maxN; i++) candidates.push(Math.round(Math.pow(10, (hi * i) / (maxN - 1))));
+    for (let i = 0; i < maxN; i++) candidates.push(Math.round((i * (n - 1)) / (maxN - 1)));
   }
   diagnostics.candidateCount = candidates.length;
   diagnostics.roundedCandidateCount = candidates.length;
