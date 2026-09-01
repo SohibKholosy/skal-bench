@@ -1862,6 +1862,22 @@ function ResultChart({ chart, color, ov }) {
       </div>
     );
   }
+  if (chart.type === "nmrRaw") {
+    return (
+      <ResponsiveContainer width="100%" height={280}>
+        <ComposedChart data={chart.channels} margin={{ top: 10, right: 24, left: 0, bottom: 10 }}>
+          <CartesianGrid stroke={C.borderSoft} strokeDasharray="3 3" {...gridOv(ov)} />
+          <XAxis type="number" dataKey="x" tick={{ fill: C.textDim, fontSize: 11 }} stroke={C.border}
+            label={{ value: `Time (${chart.timeUnit || "acquisition X unit"})`, position: "insideBottom", fill: C.textFaint, fontSize: 11, dy: 12, style: { textAnchor: "middle" } }} {...axOvX(ov)} />
+          <YAxis type="number" tick={{ fill: C.textDim, fontSize: 11 }} stroke={C.border}
+            label={{ value: "Machine signal units", angle: -90, fill: C.textFaint, fontSize: 11, position: "insideLeft", style: { textAnchor: "middle" } }} {...axOvY(ov)} />
+          <Tooltip contentStyle={{ background: C.panel2, border: `1px solid ${C.border}`, fontSize: 12 }} labelStyle={{ color: C.text }} />
+          <Line dataKey="real" stroke={C.clay} dot={false} strokeWidth={1.5} activeDot={false} />
+          <Line dataKey="imaginary" stroke={C.cyan} dot={false} strokeWidth={1.5} activeDot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    );
+  }
   if (chart.type === "nmrFit") {
     return (
       <div>
@@ -3196,7 +3212,26 @@ function CorrelationBuilder({ mod, onBack }) {
               </span>
             </label>
           </div>
-          {fileError && (
+          {rawAcquisition && (
+        <div style={{ background: C.bgSoft, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: 14, marginTop: 16, fontSize: 12, color: C.textDim, ...fBody }}>
+          <div style={{ fontSize: 11, letterSpacing: 1, color: C.textFaint, ...fMono, marginBottom: 8 }}>LF-NMR ACQUISITION</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 18px" }}>
+            <span>{rawAcquisition.filename}</span><span>{rawAcquisition.format}</span><span>TestType {rawAcquisition.testType ?? "not declared"}</span><span>{rawAcquisition.pointCount.toLocaleString()} points</span><span>{rawAcquisition.timeUnit}</span><span>X: {fmt(rawAcquisition.rawTime[0], 4)}–{fmt(rawAcquisition.rawTime.at(-1), 4)}</span><span>Calibration: {rawAcquisition.calibrationConstant ?? "unavailable"} ({calibrationSource})</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 12 }}>
+            <span style={{ color: C.textFaint }}>LF-NMR Analysis Signal</span>
+            {[["automatic", "Automatic phase-corrected"], ["imaginary", "Imaginary"], ["real", "Real"]].map(([value, label]) => <button key={value} onClick={() => changeSignalMode(value)} style={{ border: `1px solid ${signalMode === value ? mod.color : C.border}`, borderRadius: 6, padding: "5px 8px", background: signalMode === value ? `${mod.color}22` : "transparent", color: signalMode === value ? mod.color : C.textFaint, cursor: "pointer", ...fBody }}>{label}</button>)}
+          </div>
+          {preparedSignal && <div style={{ marginTop: 9, color: preparedSignal.validity === "valid" ? C.good : C.danger }}>Prepared signal: {preparedSignal.validity}; phase {preparedSignal.phaseAngle === null ? "not applied" : `${fmt(preparedSignal.phaseAngle, 5)} rad`}; global inversion {preparedSignal.globallyInverted ? "yes" : "no"}; noise estimate {fmt(preparedSignal.noiseEstimate, 4)}</div>}
+        </div>
+      )}
+      {chartData?.rawChannels && (
+        <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 20, marginTop: 16 }}>
+          <div style={{ fontSize: 11, letterSpacing: 1.2, color: C.textFaint, ...fMono, marginBottom: 12 }}>RAW LF-NMR SIGNAL — UNMODIFIED ACQUISITION CHANNELS</div>
+          <ExportableChart chart={{ type: "nmrRaw", channels: chartData.rawChannels, timeUnit: rawAcquisition?.timeUnit }} color={mod.color} title={`nmr_raw_${sampleId}`} />
+        </div>
+      )}
+      {fileError && (
             <div style={{ color: C.danger, fontSize: 13, display: "flex", gap: 8, alignItems: "center", ...fBody }}>
               <AlertCircle size={15} /> {fileError}
             </div>
@@ -7045,54 +7080,84 @@ function NmrScreen({ mod, onBack }) {
   const [fitResult, setFitResult] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [decayXY, setDecayXY] = useState(null); // {x, y} downsampled arrays used for fitting — reused by ILT
+  const [rawAcquisition, setRawAcquisition] = useState(null);
+  const [preparedSignal, setPreparedSignal] = useState(null);
+  const [signalMode, setSignalMode] = useState("automatic");
+  const [calibrationSource, setCalibrationSource] = useState("unavailable");
   const [iltLambda, setIltLambda] = useState(0.08);
   const [coreK, setCoreK] = useState(""); // optional measured core permeability, used to calibrate the SDR coefficient
   const [coreSwirr, setCoreSwirr] = useState(""); // optional measured irreducible saturation, used to derive the T2 cutoff
 
   const bulkVolume = areaFromDiameter(diameter) * length;
 
+  const analysePreparedSignal = async (acquisition, mode) => {
+    setFitResult(null); setChartData(null); setDecayXY(null);
+    const prepared = calculationFunctions.nmrPrepareSignal(acquisition, mode);
+    setPreparedSignal(prepared);
+    if (prepared.validity !== "valid") {
+      setFileError(prepared.warnings.join(" ") || "The selected signal is unsuitable for analysis.");
+      return;
+    }
+    const idxAll = prepared.time.map((_, index) => index);
+    const idxFit = calculationFunctions.nmrDownsampleLog(idxAll, 5000);
+    const xFit = idxFit.map((index) => prepared.time[index]);
+    const yFit = idxFit.map((index) => prepared.values[index]);
+    setDecayXY({ x: xFit, y: yFit });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const fit = calculationFunctions.nmrFitExpDec3(xFit, yFit);
+    setFitResult(fit);
+    const idxChart = calculationFunctions.nmrDownsampleEven(idxAll, 400);
+    const raw = idxChart.map((index) => ({ x: prepared.time[index], y: prepared.values[index] }));
+    const rawChannels = idxChart.map((index) => ({ x: acquisition.rawTime[index], real: acquisition.rawReal[index], imaginary: acquisition.rawImaginary[index] }));
+    const tMin = prepared.time[0], tMax = prepared.time[prepared.time.length - 1];
+    const fitted = [];
+    for (let index = 0; index <= 150; index++) {
+      const time = tMin + ((tMax - tMin) * index) / 150;
+      let value = fit.y0;
+      fit.comps.forEach((component) => { value += component.A * Math.exp(-time / component.T2); });
+      fitted.push({ x: time, y: value });
+    }
+    setChartData({ raw, rawChannels, fitted });
+  };
+
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    setFileError(""); setFitResult(null); setChartData(null);
+    setFileError(""); setRawAcquisition(null); setPreparedSignal(null); setFitResult(null); setChartData(null); setDecayXY(null);
     setFileLoading(true);
     try {
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-      const table = calculationFunctions.nmrParseDecayTable(aoa);
-      if (!table || table.x.length < 20) {
-        setFileError("Couldn't find a numeric Time/Real/Imaginary decay table in this file — check the format.");
-        setFileLoading(false);
-        return;
+      let acquisition;
+      if (file.name.toLowerCase().endsWith(".txt")) {
+        acquisition = calculationFunctions.nmrParseGeoSpecMaranT2(await file.text(), { filename: file.name });
+      } else if (file.name.toLowerCase().endsWith(".xls") || file.name.toLowerCase().endsWith(".xlsx")) {
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        acquisition = calculationFunctions.nmrParseSpreadsheetT2(XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" }), { filename: file.name });
+      } else {
+        throw new Error("Supported LF-NMR acquisition formats are .txt, .xls, and .xlsx.");
       }
-      const magAll = table.x.map((xv, i) => Math.hypot(table.re[i], table.im[i]));
-      // Downsample for fitting speed on very large files; keep enough points for a robust fit.
-      const idxAll = table.x.map((_, i) => i);
-      const idxFit = calculationFunctions.nmrDownsampleLog(idxAll, 5000);
-      const xFit = idxFit.map((i) => table.x[i]);
-      const yFit = idxFit.map((i) => magAll[i]);
-      setDecayXY({ x: xFit, y: yFit });
-      // small async yield so the loading spinner actually paints before the fit blocks the thread
-      await new Promise((r) => setTimeout(r, 30));
-      const fit = calculationFunctions.nmrFitExpDec3(xFit, yFit);
-      setFitResult(fit);
-      const idxChart = calculationFunctions.nmrDownsampleEven(idxAll, 400);
-      const raw = idxChart.map((i) => ({ x: table.x[i], y: magAll[i] }));
-      const tMin = table.x[0], tMax = table.x[table.x.length - 1];
-      const fitted = [];
-      for (let i = 0; i <= 150; i++) {
-        const t = tMin + ((tMax - tMin) * i) / 150;
-        let y = fit.y0;
-        fit.comps.forEach((c) => { y += c.A * Math.exp(-t / c.T2); });
-        fitted.push({ x: t, y });
+      setRawAcquisition(acquisition);
+      if (acquisition.calibrationConstant !== null) {
+        setCalibMode("constant"); setCalibValue(String(acquisition.calibrationConstant)); setCalibrationSource("imported");
+      } else {
+        setCalibMode("none"); setCalibValue(""); setCalibrationSource("unavailable");
       }
-      setChartData({ raw, fitted });
+      await analysePreparedSignal(acquisition, signalMode);
+      const importWarnings = acquisition.warnings.filter((warning) => warning.level !== "error").map((warning) => warning.message);
+      if (importWarnings.length) setFileError(importWarnings.join(" "));
     } catch (err) {
-      setFileError(`Couldn't read that file (${err?.message || "unknown error"}).`);
+      setFileError(`Couldn't import that acquisition (${err?.message || "unknown error"}).`);
     }
+    setFileLoading(false);
+  };
+
+  const changeSignalMode = async (mode) => {
+    setSignalMode(mode);
+    if (!rawAcquisition) return;
+    setFileError(""); setFileLoading(true);
+    try { await analysePreparedSignal(rawAcquisition, mode); }
+    catch (err) { setFileError(`Couldn't prepare the selected signal (${err?.message || "unknown error"}).`); }
     setFileLoading(false);
   };
 
@@ -7208,16 +7273,16 @@ function NmrScreen({ mod, onBack }) {
           <Field
             label={calibMode === "constant" ? "Calibration constant (cc per signal unit)" : "Known reference porosity for this sample"}
             unit={calibMode === "constant" ? "cc/unit" : "fraction"}
-            value={calibValue} onChange={setCalibValue}
+            value={calibValue} onChange={(value) => { setCalibValue(value); setCalibrationSource("manual"); }}
           />
         )}
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 18, alignItems: "center" }}>
         <label>
-          <input type="file" accept=".xlsx,.xls" onChange={handleFile} style={{ display: "none" }} />
+          <input type="file" accept=".txt,.xlsx,.xls" onChange={handleFile} style={{ display: "none" }} />
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: mod.color, color: "#181818", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
-            <Upload size={15} /> Upload T2 decay export (.xlsx)
+            <Upload size={15} /> Import LF-NMR acquisition (.txt, .xls, .xlsx)
           </span>
         </label>
         {fileLoading && (
@@ -7245,7 +7310,7 @@ function NmrScreen({ mod, onBack }) {
         <>
           <div style={{ background: C.panel, border: `1px solid ${mod.color}66`, borderRadius: 12, padding: 20, marginTop: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
-              <div style={{ fontSize: 11, letterSpacing: 1.2, color: C.textFaint, ...fMono }}>EXPDEC3 FIT</div>
+              <div style={{ fontSize: 11, letterSpacing: 1.2, color: C.textFaint, ...fMono }}>PREPARED ANALYSIS SIGNAL + EXPDEC3 FIT</div>
               <div style={{ fontSize: 13, ...fMono, color: fitResult.r2 > 0.99 ? C.good : fitResult.r2 > 0.95 ? C.amber : C.danger }}>R² = {fmt(fitResult.r2, 5)}</div>
             </div>
             <div style={{ marginTop: 12, fontSize: 11.5, color: C.textFaint, ...fMono, lineHeight: 1.8 }}>
