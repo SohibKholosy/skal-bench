@@ -7113,12 +7113,19 @@ function NmrScreen({ mod, onBack }) {
       return;
     }
     const idxAll = prepared.time.map((_, index) => index);
-    const idxFit = calculationFunctions.nmrDownsampleLog(idxAll, 500);
+    const fitSelection = calculationFunctions.nmrSelectExpDec3FittingIndices(prepared.time, prepared.values, 500);
+    const idxFit = fitSelection.indices;
     const xFit = idxFit.map((index) => prepared.time[index]);
     const yFit = idxFit.map((index) => prepared.values[index]);
     setDecayXY({ x: xFit, y: yFit });
     await new Promise((resolve) => setTimeout(resolve, 30));
-    const fit = calculationFunctions.nmrFitExpDec3({ ...prepared, time: xFit, values: yFit, originalPointCount: acquisition.pointCount });
+    const fit = calculationFunctions.nmrFitExpDec3({
+      ...prepared,
+      time: xFit,
+      values: yFit,
+      originalPointCount: acquisition.pointCount,
+      dataReduction: fitSelection.diagnostics,
+    });
     if (fit.status !== "Converged" && fit.status !== "Converged with stability warning") throw new Error(fit.diagnostics?.reason || fit.status);
     setFitResult(fit);
     const plotData = calculationFunctions.nmrPrepareExpDec3PlotData(prepared, fit, { maxMeasuredPoints: 400, fittedPointCount: 151 });
