@@ -1862,6 +1862,22 @@ function ResultChart({ chart, color, ov }) {
       </div>
     );
   }
+  if (chart.type === "nmrRaw") {
+    return (
+      <ResponsiveContainer width="100%" height={280}>
+        <ComposedChart data={chart.channels} margin={{ top: 10, right: 24, left: 0, bottom: 10 }}>
+          <CartesianGrid stroke={C.borderSoft} strokeDasharray="3 3" {...gridOv(ov)} />
+          <XAxis type="number" dataKey="x" tick={{ fill: C.textDim, fontSize: 11 }} stroke={C.border}
+            label={{ value: `Time (${chart.timeUnit || "acquisition X unit"})`, position: "insideBottom", fill: C.textFaint, fontSize: 11, dy: 12, style: { textAnchor: "middle" } }} {...axOvX(ov)} />
+          <YAxis type="number" tick={{ fill: C.textDim, fontSize: 11 }} stroke={C.border}
+            label={{ value: "Machine signal units", angle: -90, fill: C.textFaint, fontSize: 11, position: "insideLeft", style: { textAnchor: "middle" } }} {...axOvY(ov)} />
+          <Tooltip contentStyle={{ background: C.panel2, border: `1px solid ${C.border}`, fontSize: 12 }} labelStyle={{ color: C.text }} />
+          <Line dataKey="real" stroke={C.clay} dot={false} strokeWidth={1.5} activeDot={false} />
+          <Line dataKey="imaginary" stroke={C.cyan} dot={false} strokeWidth={1.5} activeDot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    );
+  }
   if (chart.type === "nmrFit") {
     return (
       <div>
