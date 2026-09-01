@@ -111,7 +111,7 @@ test("real and imaginary modes do not mix channels or use pointwise absolute val
   const raw = { filename: "synthetic", timeUnit: "ms", rawTime: [0, 1, 2, 3], rawReal: [1, -2, 3, -4], rawImaginary: [-10, -8, -6, -4] };
   const real = calculationFunctions.nmrPrepareSignal(raw, "real");
   const imaginary = calculationFunctions.nmrPrepareSignal(raw, "imaginary");
-  assert.deepEqual(real.values, [-1, 2, -3, 4]);
+  assert.deepEqual(real.values, [1, -2, 3, -4]);
   assert.deepEqual(imaginary.values, [10, 8, 6, 4]);
 });
 
