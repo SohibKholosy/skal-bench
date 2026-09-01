@@ -92,6 +92,9 @@ export function fitExpDec3(preparedSignal) {
   if (!time.every(Number.isFinite) || !signal.every(Number.isFinite) || time.some((value, i) => i && value <= time[i - 1])) {
     return { status: "Failed", comps: [], y0: NaN, diagnostics: { reason: "Prepared signal contains non-finite or non-increasing values." } };
   }
+  if (signal.every((value) => value === signal[0])) {
+    return { status: "Insufficient signal", comps: [], y0: NaN, diagnostics: { reason: "Prepared signal has no usable decay." } };
+  }
   const extent = time.at(-1) - time[0], positive = time.filter((value) => value > 0);
   if (!(extent > 0) || !positive.length) return { status: "Insufficient signal", comps: [], y0: NaN, diagnostics: { reason: "Prepared time extent is insufficient." } };
   const minimum = Math.max(positive[0] * .25, 1e-6), maximum = Math.max(minimum * 8, extent * 2);
