@@ -1,3 +1,4 @@
+import { fitExpDec3 } from "./nmr/expdec3.js";
 import { expDec3ModelValue, prepareExpDec3PlotData } from "./nmr/plotting.js";
 import { detectGeoSpecMaranT2, parseGeoSpecMaranT2, parseSpreadsheetT2 } from "./nmr/acquisition.js";
 import { prepareNmrSignal } from "./nmr/signalPreparation.js";
@@ -17,110 +18,6 @@ export const nmrTimurCoates = (phi, ffi, bvi, coefficients) =>
  * multiple restarts to avoid local minima — a standard, robust strategy for multi-exponential fitting
  * (Golub & Pereyra, 1973, "The Differentiation of Pseudo-Inverses and Nonlinear Least Squares Problems
  * Whose Variables Separate," SIAM J. Numer. Anal. 10(2)). Verified against real decay data before use. */
-function solveLinearSystem(A, b) {
-  const n = b.length;
-  const M = A.map((row, i) => [...row, b[i]]);
-  for (let i = 0; i < n; i++) {
-    let maxRow = i;
-    for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[maxRow][i])) maxRow = k;
-    [M[i], M[maxRow]] = [M[maxRow], M[i]];
-    if (Math.abs(M[i][i]) < 1e-12) continue;
-    for (let k = i + 1; k < n; k++) {
-      const f = M[k][i] / M[i][i];
-      for (let j = i; j <= n; j++) M[k][j] -= f * M[i][j];
-    }
-  }
-  const x = new Array(n).fill(0);
-  for (let i = n - 1; i >= 0; i--) {
-    let sum = M[i][n];
-    for (let j = i + 1; j < n; j++) sum -= M[i][j] * x[j];
-    x[i] = Math.abs(M[i][i]) < 1e-12 ? 0 : sum / M[i][i];
-  }
-  return x;
-}
-function fitAmplitudesForTaus(x, y, taus) {
-  const n = x.length, p = taus.length + 1;
-  const PtP = Array.from({ length: p }, () => new Array(p).fill(0));
-  const Pty = new Array(p).fill(0);
-  for (let i = 0; i < n; i++) {
-    const row = taus.map((t) => Math.exp(-x[i] / t));
-    row.push(1);
-    for (let a = 0; a < p; a++) {
-      Pty[a] += row[a] * y[i];
-      for (let b = 0; b < p; b++) PtP[a][b] += row[a] * row[b];
-    }
-  }
-  return solveLinearSystem(PtP, Pty);
-}
-function decaySSE(x, y, taus, coeffs) {
-  let sse = 0;
-  for (let i = 0; i < x.length; i++) {
-    let pred = coeffs[coeffs.length - 1];
-    for (let k = 0; k < taus.length; k++) pred += coeffs[k] * Math.exp(-x[i] / taus[k]);
-    const diff = pred - y[i];
-    sse += diff * diff;
-  }
-  return sse;
-}
-const NMR_TAU_MIN = 0.05, NMR_TAU_MAX = 10000;
-function costForLogTaus(x, y, logTaus) {
-  const clamped = logTaus.map((lt) => Math.min(Math.log(NMR_TAU_MAX), Math.max(Math.log(NMR_TAU_MIN), lt)));
-  const taus = clamped.map((lt) => Math.exp(lt));
-  const coeffs = fitAmplitudesForTaus(x, y, taus);
-  return { sse: decaySSE(x, y, taus, coeffs), coeffs, taus };
-}
-function nelderMead3(costFn, x0, opts = {}) {
-  const alpha = 1, gamma = 2, rho = 0.5, sigma = 0.5;
-  const maxIter = opts.maxIter || 400, step = opts.step || 1.0;
-  let simplex = [x0.slice()];
-  for (let i = 0; i < 3; i++) { const p = x0.slice(); p[i] += step; simplex.push(p); }
-  let values = simplex.map(costFn);
-  for (let iter = 0; iter < maxIter; iter++) {
-    const idx = [0, 1, 2, 3].sort((a, b) => values[a] - values[b]);
-    simplex = idx.map((i) => simplex[i]); values = idx.map((i) => values[i]);
-    if (Math.abs(values[3] - values[0]) < 1e-9 * (Math.abs(values[0]) + 1e-12)) break;
-    const centroid = [0, 0, 0];
-    for (let i = 0; i < 3; i++) for (let d = 0; d < 3; d++) centroid[d] += simplex[i][d] / 3;
-    const reflect = centroid.map((c, d) => c + alpha * (c - simplex[3][d]));
-    const rVal = costFn(reflect);
-    if (rVal < values[0]) {
-      const expand = centroid.map((c, d) => c + gamma * (reflect[d] - c));
-      const eVal = costFn(expand);
-      if (eVal < rVal) { simplex[3] = expand; values[3] = eVal; } else { simplex[3] = reflect; values[3] = rVal; }
-    } else if (rVal < values[2]) {
-      simplex[3] = reflect; values[3] = rVal;
-    } else {
-      const contract = centroid.map((c, d) => c + rho * (simplex[3][d] - c));
-      const cVal = costFn(contract);
-      if (cVal < values[3]) { simplex[3] = contract; values[3] = cVal; }
-      else { for (let i = 1; i < 4; i++) { simplex[i] = simplex[0].map((v, d) => v + sigma * (simplex[i][d] - v)); values[i] = costFn(simplex[i]); } }
-    }
-  }
-  const idx = [0, 1, 2, 3].sort((a, b) => values[a] - values[b]);
-  return { x: simplex[idx[0]], value: values[idx[0]] };
-}
-function fitExpDec3(x, y) {
-  const starts = [
-    [Math.log(1), Math.log(10), Math.log(100)], [Math.log(3), Math.log(30), Math.log(300)],
-    [Math.log(0.5), Math.log(20), Math.log(500)], [Math.log(2), Math.log(50), Math.log(200)],
-    [Math.log(5), Math.log(40), Math.log(400)], [Math.log(1), Math.log(50), Math.log(400)],
-    [Math.log(0.2), Math.log(5), Math.log(50)],
-  ];
-  let best = null;
-  for (const s0 of starts) {
-    const costFn = (logTaus) => costForLogTaus(x, y, logTaus).sse;
-    const res = nelderMead3(costFn, s0, { maxIter: 400, step: 1.2 });
-    if (!best || res.value < best.value) best = res;
-  }
-  const final = costForLogTaus(x, y, best.x);
-  const taus = final.taus, coeffs = final.coeffs;
-  const yMean = y.reduce((s, v) => s + v, 0) / y.length;
-  const sst = y.reduce((s, v) => s + (v - yMean) ** 2, 0);
-  const r2 = 1 - final.sse / sst;
-  const comps = [0, 1, 2].map((i) => ({ T2: taus[i], A: coeffs[i] })).sort((a, b) => a.T2 - b.T2);
-  return { comps, y0: coeffs[3], r2 };
-}
-
 /* Full T2 distribution via Inverse Laplace Transform: M(t) = ∫ f(T2)·exp(-t/T2) dT2 is discretized over a
  * log-spaced T2 grid and solved as regularized non-negative least squares — Lawson, C.L. & Hanson, R.J.
  * (1974), "Solving Least Squares Problems," Prentice-Hall (the standard active-set NNLS algorithm), with
