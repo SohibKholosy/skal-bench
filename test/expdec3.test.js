@@ -40,3 +40,34 @@ test("ExpDec3 rejects insufficient or invalid prepared signals", () => {
   assert.equal(calculationFunctions.nmrFitExpDec3({time:[1,2],values:[1,2]}).status, "Insufficient signal");
   assert.equal(calculationFunctions.nmrFitExpDec3({time:[1,2,1,4,5,6,7,8,9,10,11,12],values:new Array(12).fill(1)}).status, "Failed");
 });
+
+
+test("ExpDec3 log-index reducer is deterministic and exposes the effective fitting dataset", () => {
+  const n = 23148;
+  const time = Array.from({ length: n }, (_, index) => index * .5);
+  const values = Array.from({ length: n }, (_, index) => 1e5 * Math.exp(-index / 2000));
+  const first = calculationFunctions.nmrSelectExpDec3FittingIndices(time, values, 500);
+  const second = calculationFunctions.nmrSelectExpDec3FittingIndices(time, values, 500);
+  assert.deepEqual(first, second);
+  assert.equal(first.diagnostics.sourcePointCount, n);
+  assert.equal(first.diagnostics.targetMaxPoints, 500);
+  assert.equal(first.diagnostics.candidateCount, 500);
+  assert.equal(first.diagnostics.roundedCandidateCount, 500);
+  assert.equal(first.diagnostics.duplicateRoundedCount, 145);
+  assert.equal(first.diagnostics.invalidIndexCount, 0);
+  assert.equal(first.diagnostics.nonfiniteRejectedCount, 0);
+  assert.equal(first.diagnostics.finalPointCount, 356);
+  assert.equal(first.indices.length, 356);
+  assert.equal(first.diagnostics.firstIndex, 0);
+  assert.equal(first.diagnostics.lastIndex, n - 1);
+  assert.equal(first.diagnostics.firstTime, 0);
+  assert.equal(first.diagnostics.lastTime, (n - 1) * .5);
+  assert.ok(first.indices.every((index, i) => i === 0 || index > first.indices[i - 1]));
+});
+
+test("ExpDec3 reducer records and rejects non-finite selected values", () => {
+  const result = calculationFunctions.nmrSelectExpDec3FittingIndices([0, 1, 2, 3], [4, NaN, 2, 1], 500);
+  assert.deepEqual(result.indices, [0, 2, 3]);
+  assert.equal(result.diagnostics.nonfiniteRejectedCount, 1);
+  assert.equal(result.diagnostics.finalPointCount, 3);
+});
