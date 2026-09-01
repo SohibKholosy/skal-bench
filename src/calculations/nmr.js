@@ -133,6 +133,74 @@ function downsampleLog(arr, maxN) {
   return out;
 }
 
+/* Deterministic index selection for the bounded ExpDec3 fit. This deliberately
+ * reproduces the established log reducer: index 0 plus unique rounded log-space
+ * candidates. The diagnostics make the effective fitting data explicit without
+ * altering the selected points for a valid prepared signal. */
+function selectExpDec3FittingIndices(time, values, maxN = 500) {
+  const n = Math.min(time?.length || 0, values?.length || 0);
+  const diagnostics = {
+    sourcePointCount: n,
+    targetMaxPoints: maxN,
+    candidateCount: 0,
+    roundedCandidateCount: 0,
+    duplicateRoundedCount: 0,
+    invalidIndexCount: 0,
+    nonfiniteRejectedCount: 0,
+    finalPointCount: 0,
+    firstIndex: null,
+    lastIndex: null,
+    firstTime: null,
+    lastTime: null,
+  };
+  if (!Number.isInteger(maxN) || maxN < 1) throw new Error("ExpDec3 max point count must be a positive integer.");
+  if (n === 0) return { indices: [], diagnostics };
+
+  const candidates = [];
+  if (n <= maxN) {
+    for (let index = 0; index < n; index++) candidates.push(index);
+  } else {
+    const hi = Math.log10(n - 1);
+    for (let i = 0; i < maxN; i++) candidates.push(Math.round(Math.pow(10, (hi * i) / (maxN - 1))));
+  }
+  diagnostics.candidateCount = candidates.length;
+  diagnostics.roundedCandidateCount = candidates.length;
+
+  const roundedSeen = new Set();
+  for (const index of candidates) {
+    if (roundedSeen.has(index)) diagnostics.duplicateRoundedCount++;
+    roundedSeen.add(index);
+  }
+
+  const selected = [];
+  const selectedSeen = new Set();
+  const include = (index) => {
+    if (!Number.isInteger(index) || index < 0 || index >= n) {
+      diagnostics.invalidIndexCount++;
+      return;
+    }
+    if (selectedSeen.has(index)) return;
+    if (!Number.isFinite(time[index]) || !Number.isFinite(values[index])) {
+      diagnostics.nonfiniteRejectedCount++;
+      return;
+    }
+    selectedSeen.add(index);
+    selected.push(index);
+  };
+
+  if (n > maxN) include(0);
+  for (const index of candidates) include(index);
+
+  diagnostics.finalPointCount = selected.length;
+  if (selected.length) {
+    diagnostics.firstIndex = selected[0];
+    diagnostics.lastIndex = selected[selected.length - 1];
+    diagnostics.firstTime = time[selected[0]];
+    diagnostics.lastTime = time[selected[selected.length - 1]];
+  }
+  return { indices: selected, diagnostics };
+}
+
 /* Same literature-sourced lithology defaults as before removal — T2 cutoffs (Straley et al. 1997;
  * Chang et al. 1994; Morriss et al. 1997) and SDR/Coates starting coefficients (Kenyon et al. 1988;
  * Coates, Xiao & Prammer, 1999) — all editable, all flagged as needing local core calibration. */
@@ -172,6 +240,7 @@ export {
   parseDecayTable as nmrParseDecayTable,
   downsampleEven as nmrDownsampleEven,
   downsampleLog as nmrDownsampleLog,
+  selectExpDec3FittingIndices as nmrSelectExpDec3FittingIndices,
   detectGeoSpecMaranT2,
   parseGeoSpecMaranT2,
   parseSpreadsheetT2,
