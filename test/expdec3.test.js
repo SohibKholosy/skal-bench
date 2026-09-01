@@ -81,3 +81,16 @@ test("ExpDec3 reports an exactly flat prepared signal as insufficient rather tha
   assert.equal(result.status, "Insufficient signal");
   assert.match(result.diagnostics.reason, /no usable decay/i);
 });
+
+
+test("ExpDec3 fitting selector retains the configured exact cardinality across source densities", () => {
+  for (const count of [1500, 7000, 23148, 55000]) {
+    const time = Array.from({ length: count }, (_, index) => .2 + index * (749.5 / (count - 1)));
+    const values = time.map((t) => 1 + 8 * Math.exp(-t / 3) + 16 * Math.exp(-t / 28) + 40 * Math.exp(-t / 160));
+    const selection = calculationFunctions.nmrSelectExpDec3FittingIndices(time, values, 500);
+    assert.equal(selection.indices.length, 500);
+    assert.equal(selection.diagnostics.finalPointCount, 500);
+    assert.equal(selection.diagnostics.firstIndex, 0);
+    assert.equal(selection.diagnostics.lastIndex, count - 1);
+  }
+});
