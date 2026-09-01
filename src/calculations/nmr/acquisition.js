@@ -24,7 +24,7 @@ const createMetadata = () => ({
 });
 
 const metadataTarget = (metadata, section) => {
-  if (!section) return metadata.root;
+  if (!section || section === "GITData") return metadata.root;
   const key = SECTION_KEYS[section];
   if (key) return metadata[key];
   if (!metadata.otherSections[section]) metadata.otherSections[section] = {};
