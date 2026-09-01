@@ -115,5 +115,6 @@ export function fitExpDec3(preparedSignal) {
     modelVersion:"expdec3-constrained-v1", optimizer:"deterministic-nelder-mead-plus-pattern-ls-v1", startsAttempted:starts.length, validSolutions:candidates.length, nearOptimalSolutions:near.length,
     originalPointCount:preparedSignal.originalPointCount ?? n, preparedPointCount:n, fittedPointCount:n, sse:best.sse, rmse:Math.sqrt(best.sse/n), adjustedR2, residuals:best.residuals, residualLag1:lag1Correlation(best.residuals),
     t2Spreads, baselineSpread, stability:unstable ? "Potentially unstable across near-optimal starts" : "Stable across tested starts", selectedSignalMode:preparedSignal.mode ?? null, phaseAngle:preparedSignal.phaseAngle ?? null, globallyInverted:preparedSignal.globallyInverted ?? null,
+    dataReduction: preparedSignal.dataReduction ?? null,
   }};
 }
