@@ -73,9 +73,10 @@ test("GeoSpec/MARAN parser rejects a non-T2 TestType and malformed time vector",
 
 test("spreadsheet import requires identified Time/X, Real, and Imaginary columns", () => {
   const parsed = calculationFunctions.nmrParseSpreadsheetT2([
-    ["metadata", ""], ["Time", "Real", "Imaginary"], [1, 2, 3], [2, 4, 6], [3, 6, 9],
+    ["Operator", "Sanitized"], ["Time", "Real", "Imaginary"], [1, 2, 3], [2, 4, 6], [3, 6, 9],
   ]);
   assert.equal(parsed.format, "spreadsheet-t2-columns");
+  assert.equal(parsed.metadata.otherSections.Spreadsheet.Operator, "Sanitized");
   assert.deepEqual(parsed.rawImaginary, [3, 6, 9]);
   assert.throws(() => calculationFunctions.nmrParseSpreadsheetT2([["Time", "Real"], [1, 2]]), /unambiguous/);
 });
