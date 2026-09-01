@@ -1,3 +1,4 @@
+import { expDec3ModelValue, prepareExpDec3PlotData } from "./nmr/plotting.js";
 import { detectGeoSpecMaranT2, parseGeoSpecMaranT2, parseSpreadsheetT2 } from "./nmr/acquisition.js";
 import { prepareNmrSignal } from "./nmr/signalPreparation.js";
 
@@ -278,4 +279,6 @@ export {
   parseGeoSpecMaranT2,
   parseSpreadsheetT2,
   prepareNmrSignal,
+  expDec3ModelValue,
+  prepareExpDec3PlotData,
 };
