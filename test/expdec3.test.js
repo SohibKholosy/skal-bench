@@ -71,3 +71,13 @@ test("ExpDec3 reducer records and rejects non-finite selected values", () => {
   assert.equal(result.diagnostics.nonfiniteRejectedCount, 1);
   assert.equal(result.diagnostics.finalPointCount, 3);
 });
+
+
+test("ExpDec3 reports an exactly flat prepared signal as insufficient rather than a resolved decay", () => {
+  const result = calculationFunctions.nmrFitExpDec3({
+    time: Array.from({ length: 20 }, (_, index) => index + 1),
+    values: new Array(20).fill(9),
+  });
+  assert.equal(result.status, "Insufficient signal");
+  assert.match(result.diagnostics.reason, /no usable decay/i);
+});
