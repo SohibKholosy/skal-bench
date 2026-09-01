@@ -7113,7 +7113,7 @@ function NmrScreen({ mod, onBack }) {
       return;
     }
     const idxAll = prepared.time.map((_, index) => index);
-    const idxFit = calculationFunctions.nmrDownsampleLog(idxAll, 5000);
+    const idxFit = calculationFunctions.nmrDownsampleLog(idxAll, 500);
     const xFit = idxFit.map((index) => prepared.time[index]);
     const yFit = idxFit.map((index) => prepared.values[index]);
     setDecayXY({ x: xFit, y: yFit });
