@@ -152,6 +152,14 @@ export function parseSpreadsheetT2(aoa, { filename = "acquisition.xlsx" } = {}) 
     if (x >= 0 && real >= 0 && imaginary >= 0) { headerRow = rowIndex; mapping = { x, real, imaginary }; break; }
   }
   if (!mapping) throw new Error("Spreadsheet import requires unambiguous Time/X, Real, and Imaginary column headers.");
+  const metadata = createMetadata();
+  const spreadsheetMetadata = {};
+  for (let rowIndex = 0; rowIndex < headerRow; rowIndex++) {
+    const key = String(aoa[rowIndex][0] ?? "").trim();
+    const value = String(aoa[rowIndex][1] ?? "").trim();
+    if (key && value) spreadsheetMetadata[key] = value;
+  }
+  if (Object.keys(spreadsheetMetadata).length) metadata.otherSections.Spreadsheet = spreadsheetMetadata;
   const time = [], real = [], imaginary = [];
   for (let rowIndex = headerRow + 1; rowIndex < aoa.length; rowIndex++) {
     const row = aoa[rowIndex];
@@ -160,5 +168,5 @@ export function parseSpreadsheetT2(aoa, { filename = "acquisition.xlsx" } = {}) 
     if (values.some((value) => value === null)) throw new Error(`Non-numeric or non-finite spreadsheet acquisition value at row ${rowIndex + 1}.`);
     time.push(values[0]); real.push(values[1]); imaginary.push(values[2]);
   }
-  return buildAcquisition({ filename, format: "spreadsheet-t2-columns", testType: null, softwareVersion: null, metadata: createMetadata(), time, real, imaginary });
+  return buildAcquisition({ filename, format: "spreadsheet-t2-columns", testType: null, softwareVersion: null, metadata, time, real, imaginary });
 }
