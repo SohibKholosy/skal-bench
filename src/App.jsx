@@ -2928,7 +2928,7 @@ function ModuleScreen({ mod, onBack, embedded = false }) {
         <>
           <div style={{ background: C.panel, border: `1px solid ${mod.color}66`, borderRadius: 12, padding: 20, marginTop: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
-              <div style={{ fontSize: 11, letterSpacing: 1.2, color: C.textFaint, ...fMono }}>EXPDEC3 FIT</div>
+              <div style={{ fontSize: 11, letterSpacing: 1.2, color: C.textFaint, ...fMono }}>PREPARED ANALYSIS SIGNAL + EXPDEC3 FIT</div>
               <div style={{ fontSize: 13, ...fMono, color: fitResult.r2 > 0.99 ? C.good : fitResult.r2 > 0.95 ? C.amber : C.danger }}>R² = {fmt(fitResult.r2, 5)}</div>
             </div>
             <div style={{ marginTop: 12, fontSize: 11.5, color: C.textFaint, ...fMono, lineHeight: 1.8 }}>
