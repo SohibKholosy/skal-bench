@@ -2856,16 +2856,16 @@ function ModuleScreen({ mod, onBack, embedded = false }) {
           <Field
             label={calibMode === "constant" ? "Calibration constant (cc per signal unit)" : "Known reference porosity for this sample"}
             unit={calibMode === "constant" ? "cc/unit" : "fraction"}
-            value={calibValue} onChange={setCalibValue}
+            value={calibValue} onChange={(value) => { setCalibValue(value); setCalibrationSource("manual"); }}
           />
         )}
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 18, alignItems: "center" }}>
         <label>
-          <input type="file" accept=".xlsx,.xls" onChange={handleFile} style={{ display: "none" }} />
+          <input type="file" accept=".txt,.xlsx,.xls" onChange={handleFile} style={{ display: "none" }} />
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: mod.color, color: "#181818", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
-            <Upload size={15} /> Upload T2 decay export (.xlsx)
+            <Upload size={15} /> Import LF-NMR acquisition (.txt, .xls, .xlsx)
           </span>
         </label>
         {fileLoading && (
@@ -2881,6 +2881,25 @@ function ModuleScreen({ mod, onBack, embedded = false }) {
         </div>
         <Button variant="outline" icon={CalcIcon} onClick={openCoeffModal}>Coefficients</Button>
       </div>
+      {rawAcquisition && (
+        <div style={{ background: C.bgSoft, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: 14, marginTop: 16, fontSize: 12, color: C.textDim, ...fBody }}>
+          <div style={{ fontSize: 11, letterSpacing: 1, color: C.textFaint, ...fMono, marginBottom: 8 }}>LF-NMR ACQUISITION</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 18px" }}>
+            <span>{rawAcquisition.filename}</span><span>{rawAcquisition.format}</span><span>TestType {rawAcquisition.testType ?? "not declared"}</span><span>{rawAcquisition.pointCount.toLocaleString()} points</span><span>{rawAcquisition.timeUnit}</span><span>X: {fmt(rawAcquisition.rawTime[0], 4)}–{fmt(rawAcquisition.rawTime.at(-1), 4)}</span><span>Calibration: {rawAcquisition.calibrationConstant ?? "unavailable"} ({calibrationSource})</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 12 }}>
+            <span style={{ color: C.textFaint }}>LF-NMR Analysis Signal</span>
+            {[["automatic", "Automatic phase-corrected"], ["imaginary", "Imaginary"], ["real", "Real"]].map(([value, label]) => <button key={value} onClick={() => changeSignalMode(value)} style={{ border: `1px solid ${signalMode === value ? mod.color : C.border}`, borderRadius: 6, padding: "5px 8px", background: signalMode === value ? `${mod.color}22` : "transparent", color: signalMode === value ? mod.color : C.textFaint, cursor: "pointer", ...fBody }}>{label}</button>)}
+          </div>
+          {preparedSignal && <div style={{ marginTop: 9, color: preparedSignal.validity === "valid" ? C.good : C.danger }}>Prepared signal: {preparedSignal.validity}; phase {preparedSignal.phaseAngle === null ? "not applied" : `${fmt(preparedSignal.phaseAngle, 5)} rad`}; global inversion {preparedSignal.globallyInverted ? "yes" : "no"}; noise estimate {fmt(preparedSignal.noiseEstimate, 4)}</div>}
+        </div>
+      )}
+      {chartData?.rawChannels && (
+        <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 20, marginTop: 16 }}>
+          <div style={{ fontSize: 11, letterSpacing: 1.2, color: C.textFaint, ...fMono, marginBottom: 12 }}>RAW LF-NMR SIGNAL — UNMODIFIED ACQUISITION CHANNELS</div>
+          <ExportableChart chart={{ type: "nmrRaw", channels: chartData.rawChannels, timeUnit: rawAcquisition?.timeUnit }} color={mod.color} title={`nmr_raw_${sampleId}`} />
+        </div>
+      )}
       {fileError && (
         <div style={{ display: "flex", gap: 8, alignItems: "center", color: C.danger, fontSize: 13, marginTop: 12, ...fBody }}>
           <AlertCircle size={15} /> {fileError}
