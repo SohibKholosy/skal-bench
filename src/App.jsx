@@ -7348,7 +7348,25 @@ function NmrScreen({ mod, onBack }) {
                   </div>
                 )}
               </div>
+              {chartData.residuals && (
+                <div style={{ marginTop: 16, borderTop: `1px solid ${C.borderSoft}`, paddingTop: 14 }}>
+                  <div style={{ fontSize: 11, letterSpacing: 1.1, color: C.textFaint, ...fMono, marginBottom: 8 }}>EXPDEC3 RESIDUALS — FITTING DATASET</div>
+                  <ExportableChart chart={{ type: "nmrResiduals", data: chartData.residuals }} color={C.clay} title={`nmr_residuals_${sampleId}`} />
+                </div>
+              )}
             )}
+            <details style={{ marginTop: 16, fontSize: 12, color: C.textDim, ...fBody }}>
+              <summary style={{ cursor: "pointer", color: C.text }}>ExpDec3 Diagnostics</summary>
+              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 8 }}>
+                {[
+                  ["A1", fitResult.comps[0]?.A], ["A2", fitResult.comps[1]?.A], ["A3", fitResult.comps[2]?.A], ["Baseline C", fitResult.y0],
+                  ["Adjusted R²", fitResult.diagnostics?.adjustedR2], ["RMSE", fitResult.diagnostics?.rmse], ["RSS/SSE", fitResult.diagnostics?.sse], ["Lag-1 residual r", fitResult.diagnostics?.residualLag1],
+                  ["Original points", fitResult.diagnostics?.originalPointCount], ["Prepared/fitted points", fitResult.diagnostics?.fittedPointCount], ["Starts attempted", fitResult.diagnostics?.startsAttempted], ["Valid / near-optimal", `${fitResult.diagnostics?.validSolutions} / ${fitResult.diagnostics?.nearOptimalSolutions}`],
+                  ["T2 spreads", fitResult.diagnostics?.t2Spreads?.map((item) => fmt(100 * item.relativeSpread, 2) + "%").join(", ")], ["Baseline spread", fmt(100 * (fitResult.diagnostics?.baselineSpread ?? NaN), 2) + "%"],
+                  ["Signal mode", fitResult.diagnostics?.selectedSignalMode], ["Phase (rad)", fitResult.diagnostics?.phaseAngle], ["Global inversion", String(fitResult.diagnostics?.globallyInverted)], ["Optimizer", fitResult.diagnostics?.optimizer],
+                ].map(([label, value]) => <div key={label}><span style={{ color: C.textFaint }}>{label}: </span><span style={{ ...fMono }}>{typeof value === "number" ? fmt(value, 5) : value ?? "unavailable"}</span></div>)}
+              </div>
+            </details>
           </div>
 
           <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 20, marginTop: 16 }}>
