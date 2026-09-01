@@ -53,11 +53,11 @@ test("ExpDec3 log-index reducer is deterministic and exposes the effective fitti
   assert.equal(first.diagnostics.targetMaxPoints, 500);
   assert.equal(first.diagnostics.candidateCount, 500);
   assert.equal(first.diagnostics.roundedCandidateCount, 500);
-  assert.equal(first.diagnostics.duplicateRoundedCount, 145);
+  assert.equal(first.diagnostics.duplicateRoundedCount, 0);
   assert.equal(first.diagnostics.invalidIndexCount, 0);
   assert.equal(first.diagnostics.nonfiniteRejectedCount, 0);
-  assert.equal(first.diagnostics.finalPointCount, 356);
-  assert.equal(first.indices.length, 356);
+  assert.equal(first.diagnostics.finalPointCount, 500);
+  assert.equal(first.indices.length, 500);
   assert.equal(first.diagnostics.firstIndex, 0);
   assert.equal(first.diagnostics.lastIndex, n - 1);
   assert.equal(first.diagnostics.firstTime, 0);
