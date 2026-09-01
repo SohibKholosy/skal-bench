@@ -7306,6 +7306,7 @@ function NmrScreen({ mod, onBack }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
               <div style={{ fontSize: 11, letterSpacing: 1.2, color: C.textFaint, ...fMono }}>PREPARED ANALYSIS SIGNAL + EXPDEC3 FIT</div>
               <div style={{ fontSize: 13, ...fMono, color: fitResult.r2 > 0.99 ? C.good : fitResult.r2 > 0.95 ? C.amber : C.danger }}>R² = {fmt(fitResult.r2, 5)}</div>
+              <div style={{ fontSize: 11.5, ...fBody, color: fitResult.status === "Converged" ? C.good : C.amber }}>{fitResult.status} · {fitResult.diagnostics?.stability}</div>
             </div>
             <div style={{ marginTop: 12, fontSize: 11.5, color: C.textFaint, ...fMono, lineHeight: 1.8 }}>
               y(t) = {analysis.comps.map((c, i) => `${fmt(c.A, 1)}·exp(−t/${fmt(c.T2, 2)})`).join(" + ")} + {fmt(fitResult.y0, 1)}
