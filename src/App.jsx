@@ -1878,6 +1878,20 @@ function ResultChart({ chart, color, ov }) {
       </ResponsiveContainer>
     );
   }
+  if (chart.type === "nmrResiduals") {
+    return (
+      <ResponsiveContainer width="100%" height={220}>
+        <ComposedChart data={chart.data} margin={{ top: 10, right: 24, left: 0, bottom: 10 }}>
+          <CartesianGrid stroke={C.borderSoft} strokeDasharray="3 3" {...gridOv(ov)} />
+          <XAxis type="number" dataKey="x" tick={{ fill: C.textDim, fontSize: 11 }} stroke={C.border} label={{ value: "Time (ms)", position: "insideBottom", fill: C.textFaint, fontSize: 11, dy: 12, style: { textAnchor: "middle" } }} {...axOvX(ov)} />
+          <YAxis type="number" dataKey="y" tick={{ fill: C.textDim, fontSize: 11 }} stroke={C.border} label={{ value: "Measured − fitted", angle: -90, fill: C.textFaint, fontSize: 11, position: "insideLeft", style: { textAnchor: "middle" } }} {...axOvY(ov)} />
+          <Tooltip contentStyle={{ background: C.panel2, border: `1px solid ${C.border}`, fontSize: 12 }} labelStyle={{ color: C.text }} />
+          <ReferenceLine y={0} stroke={C.textFaint} strokeDasharray="4 3" />
+          <Line dataKey="y" stroke={color} dot={false} strokeWidth={1.5} activeDot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    );
+  }
   if (chart.type === "nmrFit") {
     return (
       <div>
@@ -7111,7 +7125,8 @@ function NmrScreen({ mod, onBack }) {
     const rawChannels = calculationFunctions.nmrDownsampleEven(idxAll, 400).map((index) => ({
       x: acquisition.rawTime[index], real: acquisition.rawReal[index], imaginary: acquisition.rawImaginary[index],
     }));
-    setChartData({ raw: plotData.measured, rawChannels, fitted: plotData.fitted, plotDiagnostics: plotData.diagnostics });
+    const residuals = xFit.map((x, index) => ({ x, y: fit.diagnostics.residuals[index] }));
+    setChartData({ raw: plotData.measured, rawChannels, fitted: plotData.fitted, residuals, plotDiagnostics: plotData.diagnostics });
   };
 
   const handleFile = async (e) => {
