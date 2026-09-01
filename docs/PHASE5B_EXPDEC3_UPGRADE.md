@@ -135,3 +135,8 @@ Changed production behavior is restricted to ExpDec3:
 - Flat/no-decay guardrail: exact flat input now reports `Insufficient signal`; this is an invalid-input correction, not a valid-decay calculation change.
 
 Unchanged: acquisition parser; raw Time/Real/Imaginary arrays; calibration; Phase 5A signal preparation; PCA phase correction; Real/Imaginary mode behavior; global orientation; ILT kernel/grid/regularization/solver; T2LM; rock-core cutoffs; and unrelated calculation modules.
+
+
+## Regression and build status
+
+The repository contains 38 tests: 31 pre-Phase-5B tests and 7 Phase-5B ExpDec3 tests (constrained recovery, diagnostics/input preservation, invalid input, reducer trace, non-finite rejection, flat-signal guardrail, and exact-cardinality density invariants). The local workspace available for this audit is not a complete repository checkout and has no project package manifest/lockfile; `npm ci`, `npm test`, and `npm run build` therefore cannot be run there. The full 38-test suite and production build require GitHub Actions on this pushed branch before merge.
