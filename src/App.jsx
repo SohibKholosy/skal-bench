@@ -7320,6 +7320,16 @@ function NmrScreen({ mod, onBack }) {
             {chartData && (
               <div style={{ marginTop: 16 }}>
                 <ExportableChart chart={{ type: "nmrFit", raw: chartData.raw, fitted: chartData.fitted }} color={mod.color} title={`nmr_fit_${sampleId}`} />
+                {chartData.plotDiagnostics?.excludedMeasuredNonPositive > 0 && (
+                  <div style={{ marginTop: 8, fontSize: 11.5, color: C.amber, ...fBody }}>
+                    {chartData.plotDiagnostics.excludedMeasuredNonPositive} non-positive prepared observation(s) are omitted from this logarithmic display; the prepared signal and fit are unchanged.
+                  </div>
+                )}
+                {chartData.plotDiagnostics?.excludedFittedNonPositive > 0 && (
+                  <div style={{ marginTop: 8, fontSize: 11.5, color: C.danger, ...fBody }}>
+                    Some fitted values are non-positive and cannot be shown on the logarithmic display.
+                  </div>
+                )}
               </div>
             )}
           </div>
