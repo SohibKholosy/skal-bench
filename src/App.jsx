@@ -7106,18 +7106,11 @@ function NmrScreen({ mod, onBack }) {
     await new Promise((resolve) => setTimeout(resolve, 30));
     const fit = calculationFunctions.nmrFitExpDec3(xFit, yFit);
     setFitResult(fit);
-    const idxChart = calculationFunctions.nmrDownsampleEven(idxAll, 400);
-    const raw = idxChart.map((index) => ({ x: prepared.time[index], y: prepared.values[index] }));
-    const rawChannels = idxChart.map((index) => ({ x: acquisition.rawTime[index], real: acquisition.rawReal[index], imaginary: acquisition.rawImaginary[index] }));
-    const tMin = prepared.time[0], tMax = prepared.time[prepared.time.length - 1];
-    const fitted = [];
-    for (let index = 0; index <= 150; index++) {
-      const time = tMin + ((tMax - tMin) * index) / 150;
-      let value = fit.y0;
-      fit.comps.forEach((component) => { value += component.A * Math.exp(-time / component.T2); });
-      fitted.push({ x: time, y: value });
-    }
-    setChartData({ raw, rawChannels, fitted });
+    const plotData = calculationFunctions.nmrPrepareExpDec3PlotData(prepared, fit, { maxMeasuredPoints: 400, fittedPointCount: 151 });
+    const rawChannels = calculationFunctions.nmrDownsampleEven(idxAll, 400).map((index) => ({
+      x: acquisition.rawTime[index], real: acquisition.rawReal[index], imaginary: acquisition.rawImaginary[index],
+    }));
+    setChartData({ raw: plotData.measured, rawChannels, fitted: plotData.fitted, plotDiagnostics: plotData.diagnostics });
   };
 
   const handleFile = async (e) => {
@@ -7327,6 +7320,16 @@ function NmrScreen({ mod, onBack }) {
             {chartData && (
               <div style={{ marginTop: 16 }}>
                 <ExportableChart chart={{ type: "nmrFit", raw: chartData.raw, fitted: chartData.fitted }} color={mod.color} title={`nmr_fit_${sampleId}`} />
+                {chartData.plotDiagnostics?.excludedMeasuredNonPositive > 0 && (
+                  <div style={{ marginTop: 8, fontSize: 11.5, color: C.amber, ...fBody }}>
+                    {chartData.plotDiagnostics.excludedMeasuredNonPositive} non-positive prepared observation(s) are omitted from this logarithmic display; the prepared signal and fit are unchanged.
+                  </div>
+                )}
+                {chartData.plotDiagnostics?.excludedFittedNonPositive > 0 && (
+                  <div style={{ marginTop: 8, fontSize: 11.5, color: C.danger, ...fBody }}>
+                    Some fitted values are non-positive and cannot be shown on the logarithmic display.
+                  </div>
+                )}
               </div>
             )}
           </div>
