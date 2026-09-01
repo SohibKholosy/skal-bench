@@ -1,3 +1,6 @@
+import { detectGeoSpecMaranT2, parseGeoSpecMaranT2, parseSpreadsheetT2 } from "./nmr/acquisition.js";
+import { prepareNmrSignal } from "./nmr/signalPreparation.js";
+
 // Empirical NMR permeability correlations. Coefficients must be calibrated for the applicable formation and units.
 export const nmrSDR = (phi, t2LogMean, coefficients) =>
   coefficients.a * Math.pow(phi, coefficients.m) * Math.pow(t2LogMean, coefficients.n);
@@ -271,4 +274,8 @@ export {
   parseDecayTable as nmrParseDecayTable,
   downsampleEven as nmrDownsampleEven,
   downsampleLog as nmrDownsampleLog,
+  detectGeoSpecMaranT2,
+  parseGeoSpecMaranT2,
+  parseSpreadsheetT2,
+  prepareNmrSignal,
 };
