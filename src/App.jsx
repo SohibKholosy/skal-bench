@@ -7160,15 +7160,6 @@ function NmrScreen({ mod, onBack }) {
     catch (err) { setFileError(`Couldn't prepare the selected signal (${err?.message || "unknown error"}).`); }
     setFileLoading(false);
   };
- { y += c.A * Math.exp(-t / c.T2); });
-        fitted.push({ x: t, y });
-      }
-      setChartData({ raw, fitted });
-    } catch (err) {
-      setFileError(`Couldn't read that file (${err?.message || "unknown error"}).`);
-    }
-    setFileLoading(false);
-  };
 
   const openCoeffModal = () => { setDraftCoeffs(JSON.parse(JSON.stringify(calculationFunctions.nmrLithologyDefaults[lithKey]))); setShowModal(true); };
   const confirmCoeffs = () => { setCoeffs(draftCoeffs); setShowModal(false); };
